@@ -84,6 +84,12 @@ Options (environment, e.g. in `Cuphead.sh`):
 | `CUPHEAD_RUMBLE=0` / `=game` | no rumble / the game's own rumble. Default: the game's hit rumble as short SDL haptic pulses that end by themselves (the RG34XX-SP's motor did not stop on the game's stop call when the port ran under box64; not re-checked on this route yet) |
 | `CUPHEAD_FX=half` / `sharp` | cheaper film blur (changes the picture slightly; default `game`) |
 
+At build time, `SHADER_PRECISION=highp ./build.sh ...` samples textures at full precision as a
+desktop GPU does. The default keeps GLSL ES's default sampler precision, which is also what Unity's
+own GLES compiler gives Cuphead's samplers: on the RG34XX-SP that is up to a few percent faster,
+and the difference is at most 2 of 255 levels in about a tenth of the pixels (measured on
+deterministic replays: not visible).
+
 ## Tests and measurements
 
 `bench/` runs on the handheld (with the port's test hooks): `bench_all.sh` plays every level and

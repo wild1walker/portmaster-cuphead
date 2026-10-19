@@ -10,6 +10,8 @@
 #   PYTHON                  a Python with portmaster-unity/convert/requirements.txt (default python3)
 #   DOTNET                  the .NET SDK's dotnet (default: dotnet on PATH, else ~/.dotnet/dotnet)
 #   Docker                  to build the runtime, if portmaster-unity/runtime/host/out/ua_host is missing
+#   SHADER_PRECISION=highp  sample textures at full precision, as desktop GPUs do (default: GLSL ES's
+#                           default sampler precision, as Unity's own GLES builds; see README.md)
 # Result: <out>/device/ (copy it to the handheld, e.g. /roms/ports/cuphead/, see README.md).
 # Re-running continues where it stopped: the conversion keeps a journal in <out>/Cuphead_Data.
 set -e
@@ -51,7 +53,7 @@ cp "$APP/Contents/Resources/"goggame-*.info "$OUT/" 2>/dev/null || true
 # ---- conversion: GLES3 shaders, ASTC textures, settings, audio, the helper's animation table
 log "converting (shaders, settings, textures, audio, animclips)"
 (cd "$PM/convert" && "$PY" -m pmunity convert "$OUT/Cuphead_Data" --config "$HERE/convert/cuphead.json" \
-   --plugin "$HERE/convert/animclips.py")
+   --plugin "$HERE/convert/animclips.py" ${SHADER_PRECISION:+--set shaders.precision=$SHADER_PRECISION})
 
 # ---- what Unity's Android player reads: APK + OBB
 log "Android data (APK + OBB)"
