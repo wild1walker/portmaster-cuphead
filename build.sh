@@ -12,7 +12,7 @@
 #   Docker                  to build the runtime, if portmaster-unity/runtime/host/out/ua_host is missing
 #   SHADER_PRECISION=highp  sample textures at full precision, as desktop GPUs do (default: GLSL ES's
 #                           default sampler precision, as Unity's own GLES builds; see README.md)
-# Result: <out>/device/ (copy it to the handheld, e.g. /roms/ports/cuphead/, see README.md).
+# Result: <out>/device/ (copy it to the handheld as ports/cuphead/, see README.md).
 # Re-running continues where it stopped: the conversion keeps a journal in <out>/Cuphead_Data.
 set -e
 APP=${1:?usage: build.sh <Cuphead.app> [out]}
@@ -75,5 +75,6 @@ for f in Libs/armeabi-v7a/libmain.so Libs/armeabi-v7a/libunity.so MonoLibs/armea
   cp "$PLAYER/Variations/mono/Release/$f" "$D/lib/"
 done
 cp -cR "$OUT/android/zip/." "$D/" 2>/dev/null || cp -R --reflink=auto "$OUT/android/zip/." "$D/"
-cp "$HERE/port/cuphead_hotkey.gptk" "$D/"
-log "done: $D ($(du -sh "$D" | cut -f1)); copy it and port/Cuphead.sh to the handheld (README.md)"
+cp "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/README.md" "$D/"
+touch "$D/.cuphead_ready"                      # (Cuphead.sh then skips the on-device setup)
+log "done: $D ($(du -sh "$D" | cut -f1)); copy it as ports/cuphead/ and pm/Cuphead.sh into ports/ (README.md)"

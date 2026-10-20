@@ -1,0 +1,24 @@
+{
+    "version": 4,
+    "name": "cuphead.zip",
+    "items": ["Cuphead.sh", "cuphead"],
+    "items_opt": [],
+    "attr": {
+        "title": "Cuphead",
+        "porter": ["wild1walker"],
+        "desc": "A classic run and gun action game heavily focused on boss battles, inspired by 1930s cartoons.",
+        "desc_md": null,
+        "inst": "Requires Cuphead for macOS from GOG (1.3.4, with or without The Delicious Last Course): copy the installed Cuphead.app or GOG's macOS installers (.pkg) into ports/cuphead/gamedata. The first launch builds the game on the device (downloads Unity's Android player from Unity, about 190 MB; one to a few hours; about 10 GB free space needed during setup).",
+        "inst_md": null,
+        "genres": ["action", "platform"],
+        "image": null,
+        "rtr": false,
+        "exp": true,
+        "runtime": [],
+        "store": [{"name": "GOG", "gameurl": "https://www.gog.com/game/cuphead", "developerurl": ""}],
+        "availability": "paid",
+        "reqs": ["armhf"],
+        "arch": ["aarch64"],
+        "min_glibc": ""
+    }
+}

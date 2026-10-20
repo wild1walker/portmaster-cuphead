@@ -20,3 +20,4 @@ __pycache__/
 shots/
 .DS_Store
 ._*
+pm/cache/

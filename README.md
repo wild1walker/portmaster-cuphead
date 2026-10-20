@@ -18,40 +18,56 @@ the original's: every default either changes nothing on screen or (texture size,
 RAM) is the conversion's documented setting. What is cropped or switched off is listed under
 Options.
 
-## What you need
+## Install (PortMaster: the game is built on the handheld)
 
-- **Cuphead 1.3.4 for macOS** (GOG; the DLC is picked up when it is installed). Steam's macOS
-  build has the same data but its DLC check and store layer are untested here. Windows builds
-  have no shaders the handheld's GPU can use.
-- **Unity 2017.4.9f1's Android player**: `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe`
-  from Unity's download archive, unpacked with 7-Zip (`7z x ...`). The folder that contains
-  `Variations/` and `Data/` is `PMUNITY_ANDROID_PLAYER` below. It is Unity's software, under
-  Unity's terms; use it only as they allow.
-- A clone of [portmaster-unity](https://github.com/wild1walker/portmaster-unity) next to this one
-  (`--recurse-submodules`), Docker (to build its runtime), Python 3.10+ with its
-  `convert/requirements.txt`, the .NET 8 SDK.
-- About 6 GB of free disk (much less on APFS, where the copies are clones).
+1. Unzip the port (`cuphead.zip`, built with `package.sh`) into the handheld's `ports/` folder:
+   `Cuphead.sh` and `cuphead/`.
+2. Put your copy of Cuphead into `ports/cuphead/gamedata/`: either the installed `Cuphead.app`
+   (GOG, macOS, 1.3.4; with The Delicious Last Course if you have it), copied from a Mac, or GOG's
+   macOS installers (`.pkg`: the game's and the DLC's). Windows versions do not work (Direct3D
+   shaders only).
+3. Launch Cuphead from the Ports menu. On the first launch PortMaster's patcher runs the setup
+   (`pm/cuphead/setup/patchscript`): it unpacks the game (GOG's installers with
+   `pmunity macpkg`), downloads Unity 2017.4.9f1's Android player from Unity (about 190 MB, Wi-Fi;
+   or put `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` from Unity's download archive in
+   `gamedata/`), converts the game with portmaster-unity's converter, patches its code, packs it for
+   the player and installs it. It takes one to a few hours, once, needs about 10 GB free on the
+   card while it runs (2.5 GB stay), and continues where it stopped if it is interrupted. Log:
+   `ports/cuphead/patchlog.txt`.
 
-## Build
+Saves live in `ports/cuphead/data/`. Select+Start quits. The launcher expects PortMaster
+(`control.txt`, gptokeyb, the patcher, 7-Zip) and the 32-bit libraries in `/lib32` and `/usr/lib32`
+(Knulli).
+
+## Building the port
+
+`package.sh` makes `cuphead.zip`: it builds the helper (against your copy's assemblies; none of
+them is copied), a self-contained linux-arm64 build of the code patcher, portmaster-unity's runtime
+(Docker), the setup's Python (`pm/build_pybundle.sh`: python-build-standalone's CPython 3.12 with
+UnityPy and the image libraries; downloads what is not cached yet), and copies the converter and
+every licence into it.
+
+```sh
+GAME_MANAGED=/Applications/Cuphead.app/Contents/Resources/Data/Managed ./package.sh out/pm
+```
+
+Needs a clone of [portmaster-unity](https://github.com/wild1walker/portmaster-unity) next to this
+one (`--recurse-submodules`), Docker, Python 3 with pip, the .NET 8 SDK.
+
+## Building on a computer instead
+
+`build.sh` does the whole conversion on a PC (minutes instead of hours) and assembles the folder for
+`ports/cuphead/` directly; it needs Unity's Android player unpacked there
+(`PMUNITY_ANDROID_PLAYER`, from the installer above with 7-Zip) and Python with
+portmaster-unity's `convert/requirements.txt`:
 
 ```sh
 export PMUNITY_ANDROID_PLAYER=/path/to/unpacked/android-player
-./build.sh "/Applications/Cuphead.app" out      # PYTHON=..., DOTNET=..., PMUNITY=... if not the defaults
+./build.sh "/Applications/Cuphead.app" out      # -> out/device/ = ports/cuphead/; PYTHON=, DOTNET=, PMUNITY=
 ```
 
-It builds the code patch set and the helper (below), converts the game's data (shaders to GLES 3,
-textures to ASTC at 0.375 scale, settings, audio, the helper's animation table), packs the APK +
-OBB for the Android player, builds the runtime and assembles `out/device/`. A full run takes a few
-minutes on a recent Mac; re-running continues where it stopped.
-
-## Install
-
-1. Copy `out/device/` to the handheld as `ports/cuphead/` (Knulli: `/userdata/roms/ports/cuphead/`)
-   and `port/Cuphead.sh` into `ports/`.
-2. Start Cuphead from the Ports menu. Saves live in `ports/cuphead/data/`. Select+Start quits.
-
-The launcher expects PortMaster (`control.txt`, gptokeyb) and the 32-bit libraries in `/lib32` and
-`/usr/lib32` (Knulli). Other firmware may keep them elsewhere: adjust `LD_LIBRARY_PATH` there.
+Copy `out/device/` as `ports/cuphead/` and `pm/Cuphead.sh` into `ports/` (the folder is marked
+as set up, so the launcher skips the on-device setup).
 
 ## What the port changes
 
