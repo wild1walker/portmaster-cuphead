@@ -23,7 +23,7 @@ Options.
 ## Install (PortMaster: the game is built on the handheld)
 
 1. Download `cuphead.zip` from this repository's
-   [Releases](https://github.com/wild1walker/portmaster-cuphead/releases/latest) and unzip it into
+   [Releases](https://github.com/wild1walker/portmaster-cuphead/releases) and unzip it into
    the handheld's `ports/` folder (it holds `Cuphead.sh` and `cuphead/`). That is everything the
    port needs: the runtime, the converter and the setup's tools are inside.
 2. Put your copy of Cuphead into `ports/cuphead/gamedata/`: either the installed `Cuphead.app`
