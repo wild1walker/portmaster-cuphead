@@ -35,7 +35,9 @@ Options.
    `pmunity macpkg`), downloads Unity 2017.4.9f1's Android player from Unity (about 190 MB, Wi-Fi;
    or put `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` from Unity's download archive in
    `gamedata/`), converts the game with portmaster-unity's converter, patches its code, packs it for
-   the player and installs it. It takes one to a few hours, once, needs about 10 GB free on the
+   the player and installs it (`ports/cuphead/setup.txt` chooses the texture quality: `medium`,
+   the default, or `fast`, about 2.5 times faster to encode at slightly lower quality). It takes one
+   to a few hours, once, needs about 10 GB free on the
    card while it runs (2.5 GB stay), and continues where it stopped if it is interrupted. Log:
    `ports/cuphead/patchlog.txt`.
 

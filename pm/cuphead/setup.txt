@@ -1,0 +1,7 @@
+# Cuphead setup options, read once by the first-launch setup (before the conversion starts).
+#
+# texture_quality: how carefully the textures are encoded for the handheld's GPU (ASTC 4x4).
+#   medium  the default; what the port is tested with
+#   fast    about 2.5x faster to encode, so the setup takes roughly an hour less on an H700
+#           device; slightly lower texture quality (hard to see at the handheld's screen size)
+texture_quality=medium

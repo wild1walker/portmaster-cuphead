@@ -88,9 +88,15 @@ if [ ! -f "$W/.step_player" ]; then
 fi
 
 # ---- 3. conversion: GLES3 shaders, settings, ASTC textures, audio, the helper's animation table
+# texture quality: TEXTURE_QUALITY (PortMaster's patcher question), else ports/cuphead/setup.txt
+# (texture_quality=medium|fast), else medium. fast: ASTC encoded about 2.5x faster (a shorter
+# setup), slightly lower quality (about 0.7 dB); medium is what the port is tested with.
+Q=${TEXTURE_QUALITY:-$(sed -n 's/^[[:space:]]*texture_quality[[:space:]]*=[[:space:]]*\([a-z]*\).*/\1/p' "$GAMEDIR/setup.txt" 2>/dev/null | tail -1)}
+case "$Q" in fast|medium) ;; *) Q=medium;; esac
 if [ ! -f "$W/.step_convert" ]; then
   step "converting the game (the long part: one to a few hours; it continues where it stopped if interrupted)"
-  pm convert "$D" --config "$S/cuphead.json" --plugin "$S/animclips.py" \
+  echo "texture quality: $Q"
+  pm convert "$D" --config "$S/cuphead.json" --plugin "$S/animclips.py" --set textures.quality="$Q" \
     || fail "Converting the game's files failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_convert"
 fi

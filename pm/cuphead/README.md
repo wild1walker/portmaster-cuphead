@@ -29,6 +29,10 @@ handheld.
    `ports/cuphead/patchlog.txt`.
 3. When it is done the game starts. The installers in `gamedata/` can be deleted then.
 
+Before the first launch you can edit `ports/cuphead/setup.txt`: `texture_quality=fast` encodes the
+textures about 2.5 times faster (roughly an hour less setup on an H700 device) at slightly lower
+quality; `medium`, the default, is what the port is tested with.
+
 Saves and settings: `ports/cuphead/data/`. Select+Start quits.
 
 ## Licences
