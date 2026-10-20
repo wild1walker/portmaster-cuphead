@@ -40,7 +40,7 @@ S="$P/setup"
 cp "$HERE/pm/cuphead/setup/patchscript" "$HERE/pm/cuphead/setup/questions.lua" "$PYB" "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" \
    "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
 [ "$(basename "$PYB")" = python.tar.gz ] || mv "$S/$(basename "$PYB")" "$S/python.tar.gz"
-(cd "$PM/convert" && find pmunity -name '*.py' -not -path '*/__pycache__/*') | while read -r f; do
+(cd "$PM/convert" && find pmunity \( -name '*.py' -o -name '*.shader' \) -not -path '*/__pycache__/*') | while read -r f; do
   mkdir -p "$S/$(dirname "$f")"; cp "$PM/convert/$f" "$S/$f"
 done
 chmod +x "$Z/Cuphead.sh" "$P/ua_host" "$S/patchscript" "$S/codepatch"
@@ -51,6 +51,9 @@ cp "$HERE/LICENSE" "$L/LICENSE.portmaster-cuphead.txt"
 cp "$PM/LICENSE" "$L/LICENSE.portmaster-unity.txt"
 cp "$PM/THIRD_PARTY.md" "$L/THIRD_PARTY.portmaster-unity.md"
 cp "$PM/runtime/thirdparty/libhybris/LICENSE.Apache2" "$L/LICENSE.libhybris-Apache-2.0.txt"   # in ua_host
+ML="$PM/runtime/media/out/licenses"                                                         # in ua_host (video decoders)
+ls "$ML"/*.copyright >/dev/null 2>&1 || { echo "no decoder licences in $ML: build portmaster-unity's runtime first" >&2; exit 1; }
+for f in "$ML"/*.copyright; do cp "$f" "$L/LICENSE.$(basename "$f" .copyright).txt"; done
 NUGET=${NUGET_PACKAGES:-$HOME/.nuget/packages}
 RT=$(ls -d "$NUGET"/microsoft.netcore.app.runtime.linux-arm64/8.* | tail -1)
 cp "$RT/LICENSE.TXT" "$L/LICENSE.dotnet-runtime.txt"                                        # in codepatch

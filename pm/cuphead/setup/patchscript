@@ -112,7 +112,7 @@ if [ ! -f "$W/.step_package" ]; then
   pm android-data --src "$D" --pkg "$P" --out "$W/android" --name Cuphead --package com.cupheadport.game \
     --root-file animclips.txt --managed-file "$S/CupheadPort.dll" --game-managed "$D/Managed" \
     --assembly-patch Assembly-CSharp.dll "env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 '$S/codepatch' --target=android {managed} {out}" \
-    --mono-etc "$GD/mono-etc" --dllmap SDL2=libSDL2-2.0.so.0 --consume-src --verify-bundles 2 --pack all \
+    --mono-etc "$GD/mono-etc" --dllmap SDL2=libSDL2-2.0.so.0 --consume-src --verify-bundles 2 --pack all --no-video-shader \
     || fail "Packing the game failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_package"
 fi
