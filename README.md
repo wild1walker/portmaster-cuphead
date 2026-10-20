@@ -1,11 +1,13 @@
 # portmaster-cuphead
 
-Cuphead (with The Delicious Last Course) on ARM Linux handhelds, on Unity's own Android player run
-natively by [portmaster-unity](https://github.com/wild1walker/portmaster-unity). Made on an
-Anbernic RG34XX-SP (Knulli: Allwinner H700, Mali-G31, 1 GB RAM, 720x480).
+Cuphead (with The Delicious Last Course) on ARM Linux handhelds, as a PortMaster port: Unity's own
+Android player, run natively by the runtime from
+[portmaster-unity](https://github.com/wild1walker/portmaster-unity) (the shared tools; you do not
+need it to install). Made on an Anbernic RG34XX-SP (Knulli: Allwinner H700, Mali-G31, 1 GB RAM,
+720x480).
 
-**No game files are in this repository, and none are made available anywhere.** You need your own
-copy of Cuphead; `build.sh` converts it on your computer.
+**No game files are in this repository or its releases.** You need your own copy of Cuphead: the
+port builds the game from it on the handheld the first time you launch it (see Install).
 
 ## Status (RG34XX-SP)
 
@@ -20,8 +22,10 @@ Options.
 
 ## Install (PortMaster: the game is built on the handheld)
 
-1. Unzip the port (`cuphead.zip`, built with `package.sh`) into the handheld's `ports/` folder:
-   `Cuphead.sh` and `cuphead/`.
+1. Download `cuphead.zip` from this repository's
+   [Releases](https://github.com/wild1walker/portmaster-cuphead/releases/latest) and unzip it into
+   the handheld's `ports/` folder (it holds `Cuphead.sh` and `cuphead/`). That is everything the
+   port needs: the runtime, the converter and the setup's tools are inside.
 2. Put your copy of Cuphead into `ports/cuphead/gamedata/`: either the installed `Cuphead.app`
    (GOG, macOS, 1.3.4; with The Delicious Last Course if you have it), copied from a Mac, or GOG's
    macOS installers (`.pkg`: the game's and the DLC's). Windows versions do not work (Direct3D
@@ -41,7 +45,7 @@ Saves live in `ports/cuphead/data/`. Select+Start quits. The launcher expects Po
 
 ## Building the port
 
-`package.sh` makes `cuphead.zip`: it builds the helper (against your copy's assemblies; none of
+Only needed to change the port: installing uses the release. `package.sh` makes `cuphead.zip`: it builds the helper (against your copy's assemblies; none of
 them is copied), a self-contained linux-arm64 build of the code patcher, portmaster-unity's runtime
 (Docker), the setup's Python (`pm/build_pybundle.sh`: python-build-standalone's CPython 3.12 with
 UnityPy and the image libraries; downloads what is not cached yet), and copies the converter and
@@ -51,8 +55,9 @@ every licence into it.
 GAME_MANAGED=/Applications/Cuphead.app/Contents/Resources/Data/Managed ./package.sh out/pm
 ```
 
-Needs a clone of [portmaster-unity](https://github.com/wild1walker/portmaster-unity) next to this
-one (`--recurse-submodules`), Docker, Python 3 with pip, the .NET 8 SDK.
+Building needs a clone of [portmaster-unity](https://github.com/wild1walker/portmaster-unity)
+(the shared tools: runtime and converter) next to this one (`--recurse-submodules`), Docker,
+Python 3 with pip, the .NET 8 SDK.
 
 ## Building on a computer instead
 

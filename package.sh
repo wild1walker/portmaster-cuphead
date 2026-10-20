@@ -89,7 +89,6 @@ tar -xzf "$PYB" -C "$T"
   done
 } > "$L/LICENSE.setup-python.txt"
 
-N="cuphead-$(date -u +%Y%m%d)"
-rm -f "$OUT/$N.zip"
-(cd "$Z" && zip -qr -X "$OUT/$N.zip" Cuphead.sh cuphead)
-log "built $OUT/$N.zip ($(du -h "$OUT/$N.zip" | cut -f1)): unzip it into the handheld's ports folder"
+rm -f "$OUT/cuphead.zip"
+(cd "$Z" && zip -qr -X "$OUT/cuphead.zip" Cuphead.sh cuphead)
+log "built $OUT/cuphead.zip ($(du -h "$OUT/cuphead.zip" | cut -f1)): unzip it into the handheld's ports folder"
