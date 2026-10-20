@@ -33,6 +33,7 @@ if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
     export PATCHER_FILE="$GAMEDIR/setup/patchscript"
     export PATCHER_GAME="Cuphead"
     export PATCHER_TIME="one to a few hours, once"
+    export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
     source "$controlfolder/utils/patcher.txt"
     $ESUDO kill -9 $(pidof gptokeyb) 2>/dev/null
   fi

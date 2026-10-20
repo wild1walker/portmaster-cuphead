@@ -37,7 +37,7 @@ cp "$HERE/pm/cuphead/README.md" "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm
 cp "$HERE/pm/cuphead/gamedata/PUT_GAME_FILES_HERE.txt" "$P/gamedata/"
 cp "$PM/runtime/host/out/ua_host" "$P/"
 S="$P/setup"
-cp "$HERE/pm/cuphead/setup/patchscript" "$PYB" "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" \
+cp "$HERE/pm/cuphead/setup/patchscript" "$HERE/pm/cuphead/setup/questions.lua" "$PYB" "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" \
    "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
 [ "$(basename "$PYB")" = python.tar.gz ] || mv "$S/$(basename "$PYB")" "$S/python.tar.gz"
 (cd "$PM/convert" && find pmunity -name '*.py' -not -path '*/__pycache__/*') | while read -r f; do
