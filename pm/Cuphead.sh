@@ -23,7 +23,25 @@ GAMEDIR="/$directory/ports/cuphead"
 cd "$GAMEDIR" || exit 1
 mv -f "$GAMEDIR/log.txt" "$GAMEDIR/log.prev.txt" 2>/dev/null
 > "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+
+# ---- which build: the 32-bit one (below) wherever the system runs 32-bit (armhf) programs; on a
+# 64-bit-only system the 64-bit one, which has its own setup, files and launch (cuphead/launch64.sh).
+# CUPHEAD_ROUTE=64 takes the 64-bit one on a system that has both (a test switch).
+if [ "$CUPHEAD_ROUTE" = 64 ] || { [ ! -e /lib/ld-linux-armhf.so.3 ] && [ "$(uname -m)" = aarch64 ]; }; then
+  if [ -f "$GAMEDIR/launch64.sh" ]; then source "$GAMEDIR/launch64.sh"; exit; fi
+  echo "this copy of the port has no 64-bit build (cuphead/launch64.sh)"
+fi
+
 echo "Cuphead: $CFW_NAME on $DEVICE_NAME ($DEVICE_ARCH), ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}, RAM $(awk '/MemTotal/{print int($2/1024)" MB"}' /proc/meminfo)"
+
+# Cuphead's Unity player is 32-bit: without the 32-bit loader (ua_host's interpreter) nothing can
+# run, so stop before the setup's hours of work
+if [ ! -e /lib/ld-linux-armhf.so.3 ]; then
+  pm_message "Cuphead needs a firmware with 32-bit (armhf) support, and this one has none (no /lib/ld-linux-armhf.so.3)."
+  sleep 8
+  pm_finish
+  exit 1
+fi
 
 # ---- first launch: build the game from your copy (PortMaster's patcher shows the progress)
 if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
