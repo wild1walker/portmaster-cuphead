@@ -29,7 +29,8 @@ PY="$W/python/bin/python3.12"
 if ! "$PY" -c "import UnityPy, lz4, astc_encoder, PIL" 2>/dev/null; then
   step "unpacking the setup tools"
   rm -rf "$W/python"
-  tar -xzf "$S/python.tar.gz" -C "$W" || fail "Could not unpack the setup's Python (see patchlog.txt)."
+  # (gunzip | tar: some firmwares' BusyBox tar has no -z, e.g. muOS)
+  ( set -o pipefail; gunzip -c "$S/python.tar.gz" | tar -xf - -C "$W" ) || fail "Could not unpack the setup's Python (see patchlog.txt)."
 fi
 export PYTHONPATH="$S" PYTHONDONTWRITEBYTECODE=1
 pm() { (cd "$S" && "$PY" -m pmunity "$@"); }
