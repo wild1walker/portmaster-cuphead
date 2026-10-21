@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <!-- What Cuphead, Rewired and the port's helper reach by reflection, kept from IL2CPP's managed
+       code stripping (UnityLinker's include-link-xml: build64.sh passes this file when pmunity
+       il2cpp takes one). Comments stay inside <linker>: 2017.4's UnityLinker ignores the whole file
+       when a comment comes before it (measured).
+
+       pmunity il2cpp's default strip level ("low") keeps every assembly except the .NET class
+       libraries whole (it makes them roots), so the first entries change nothing today: they say
+       so explicitly, so that a stricter level can not remove what is looked up by name. The last
+       one is the only class-library code the game reaches through reflection, and Unity's own
+       linker descriptors (il2cpp/LinkerDescriptors) have nothing for System.Xml. See
+       docs/il2cpp.md. -->
+
+  <!-- The game. Unity finds its MonoBehaviours and ScriptableObjects, the targets of SendMessage,
+       Invoke, CancelInvoke and StartCoroutine(string), and the fields JsonUtility writes into the
+       save files by name; the helper reads private members of SceneLoader, AssetBundleLoader,
+       AssetLoader<SpriteAtlas>, FontLoader, GlowText, BlurGamma, PlatformingLevelParallax and the
+       levels' properties, and calls AssetBundleLoader.loadAllAssetsSynchronous<Object> through
+       MakeGenericMethod (reference type: IL2CPP's shared code for <Texture2D> serves it). -->
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+  <assembly fullname="Assembly-CSharp-firstpass" preserve="all"/>
+
+  <!-- The port's helper: only the patched Assembly-CSharp calls it. -->
+  <assembly fullname="CupheadPort" preserve="all"/>
+
+  <!-- Rewired: platform initializers looked up by name (Assembly.GetType, Type.InvokeMember),
+       reflection over its own data classes (ReflectionTools, TinyJson); Rewired's own link.xml
+       keeps it whole too. -->
+  <assembly fullname="Rewired_Core" preserve="all"/>
+
+  <!-- Unity's packages the scenes use. -->
+  <assembly fullname="UnityEngine.UI" preserve="all"/>
+  <assembly fullname="UnityEngine.Timeline" preserve="all"/>
+
+  <!-- XmlSerializer (reflection only in this profile: no generated serializers). Dialoguer writes its
+       global variables (DialoguerGlobalVariables: List<bool>, List<float>, List<string>) as XML into
+       every save (PlayerData.Save, and at PlayerData's construction), and reads them back from the
+       save file; Cuphead's Xml helper and Rewired's SerializationTools use it too. (Linked without
+       this entry, 37 of the namespace's 121 types are gone.) -->
+  <assembly fullname="System.Xml">
+    <namespace fullname="System.Xml.Serialization" preserve="all"/>
+  </assembly>
+</linker>
