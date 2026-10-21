@@ -4,9 +4,8 @@ Players do not need any of this: installing uses the release zip ([README](../RE
 This page is for changing the port, or for converting the game on a computer instead of on the
 handheld.
 
-Both ways need a clone of [portmaster-unity](https://github.com/wild1walker/portmaster-unity) (the
-shared runtime and converter) next to this one, cloned with `--recurse-submodules`, or named with
-`PMUNITY=<checkout>`.
+Both ways need a checkout of portmaster-unity (the shared runtime and converter; not public yet)
+next to this one, cloned with `--recurse-submodules`, or named with `PMUNITY=<checkout>`.
 
 ## The release zip (`package.sh`)
 

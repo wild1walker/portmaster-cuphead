@@ -2,8 +2,7 @@
 
 This port contains **no game files**: you provide your own copy of Cuphead, and the first launch
 builds the handheld version from it. Cuphead runs on Unity's own Android player, run directly on
-the handheld's 32-bit Linux by [portmaster-unity](https://github.com/wild1walker/portmaster-unity)
-(no Android, no emulator).
+the handheld's 32-bit Linux by the port's runtime (no Android, no emulator).
 
 Full guide, known issues and bug reports: https://github.com/wild1walker/portmaster-cuphead
 

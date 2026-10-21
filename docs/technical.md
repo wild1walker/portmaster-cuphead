@@ -1,9 +1,8 @@
 # How the port works
 
-Cuphead (Unity 2017.4.9f1, Mono) runs on Unity's own ARMv7 Android player. The runtime from
-[portmaster-unity](https://github.com/wild1walker/portmaster-unity) (`ua_host`) loads the player's
-libraries (`libmain.so`, `libunity.so`, `libmono.so`) on the handheld's 32-bit (armhf) Linux
-userland, plays the Java side of Unity's Android activity in C and stands in for the Android APIs
+Cuphead (Unity 2017.4.9f1, Mono) runs on Unity's own ARMv7 Android player. The port's runtime
+(`ua_host`) loads the player's libraries (`libmain.so`, `libunity.so`, `libmono.so`) on the
+handheld's 32-bit (armhf) Linux userland, plays the Java side of Unity's Android activity in C and stands in for the Android APIs
 the player uses. No Android, no emulator, no x86 translation. Developed on an Anbernic RG34XX-SP
 (Knulli: Allwinner H700, Mali-G31, 1 GB RAM, 720x480).
 
@@ -100,8 +99,8 @@ Set in the environment, e.g. as `export` lines in `Cuphead.sh` (after `get_contr
 | `UA_FPS=<seconds>` | how often `log.txt` gets a line of frame statistics (launcher default 10) |
 | `UA_PAD_NAME` | the pad name the game sees (launcher default `Xbox Wireless Controller`) |
 
-portmaster-unity's [docs/runtime.md](https://github.com/wild1walker/portmaster-unity/blob/main/docs/runtime.md)
-lists the runtime's own `UA_*` switches.
+The runtime has more `UA_*` switches of its own (its documentation, docs/runtime.md, is in its
+repository, which is not public yet).
 
 At build time, `SHADER_PRECISION=highp ./build.sh ...` samples textures at full precision as a
 desktop GPU does. The default keeps GLSL ES's default sampler precision, which is also what Unity's

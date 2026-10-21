@@ -2,7 +2,7 @@
 # PORTMASTER: cuphead.zip, Cuphead.sh
 #
 # Cuphead (GOG macOS 1.3.4, with or without The Delicious Last Course) on Unity's own Android
-# player, run natively on the handheld's 32-bit userland by portmaster-unity's ua_host. On the first
+# player, run natively on the handheld's 32-bit userland by the port's runtime (ua_host). On the first
 # launch the setup builds the game from your copy in ports/cuphead/gamedata/ (see README.md there).
 
 XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}

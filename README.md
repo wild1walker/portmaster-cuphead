@@ -9,8 +9,7 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
   releases. You bring Cuphead for macOS from GOG; the port turns it into a handheld version the
   first time you start it.
 - **How it runs:** Unity (the engine Cuphead is made with) has an Android version of its player.
-  The [portmaster-unity](https://github.com/wild1walker/portmaster-unity) tools run that player
-  directly on the handheld's Linux, with no Android and no emulator. That is why Cuphead runs at
+  The port runs that player directly on the handheld's Linux, with no Android and no emulator. That is why Cuphead runs at
   close to its full 60 frames per second.
 - **It looks and plays like the original.** Nothing the port turns on by default changes the
   picture or the game play. The few things that do are options, off unless you choose them.
@@ -197,9 +196,6 @@ Please attach these two files from `ports/cuphead/`:
 On Knulli they are in `roms/ports/cuphead/` on the card, or `share/roms/ports/cuphead/` over the
 network. **Never attach game files**, and remove anything personal from the logs if you see it.
 
-Problems with the tools for other Unity games belong in
-[portmaster-unity](https://github.com/wild1walker/portmaster-unity/issues) instead.
-
 ## For developers
 
 - [docs/technical.md](docs/technical.md): how the port works, what it changes in the game, every
@@ -225,9 +221,8 @@ Credits:
 - **StudioMDHR** made Cuphead.
 - **[PortMaster](https://portmaster.games/)** installs and launches the port, and its patcher shows
   the setup.
-- **[portmaster-unity](https://github.com/wild1walker/portmaster-unity)** provides the runtime
-  (`ua_host`) and the converter. It uses [libhybris](https://github.com/libhybris/libhybris)
-  (Apache 2.0) and links the video decoders libvpx, libvorbis, libogg, libopus and OpenH264.
+- The port's runtime (`ua_host`) and converter use [libhybris](https://github.com/libhybris/libhybris)
+  (Apache 2.0); the runtime links the video decoders libvpx, libvorbis, libogg, libopus and OpenH264.
 - The setup runs on [python-build-standalone](https://github.com/astral-sh/python-build-standalone)'s
   CPython with [UnityPy](https://github.com/K0lb3/UnityPy) and ARM's astc-encoder; the code patcher
   uses [Mono.Cecil](https://github.com/jbevain/cecil) and the .NET runtime.
