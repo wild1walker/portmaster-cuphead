@@ -80,6 +80,25 @@ namespace CupheadPort
             }
         }
 
+        // On Unity's Android player (portmaster-unity) the pad is Rewired's Xbox Wireless Controller, whose
+        // face buttons are named after their Xbox letters by position (A bottom, B right, X left, Y top).
+        // Shown as the letters printed on the handheld: Nintendo layout by default (B bottom, A right,
+        // Y left, X top, as on Anbernic, Miyoo, Powkiddy and TrimUI pads); CUPHEAD_PROMPTS=xbox keeps the
+        // Xbox letters. The buttons' actions stay where Cuphead puts them (the bottom one jumps).
+        // Called from CupheadInput.InputDisplayForButton (codepatch pad-prompts-android).
+        public static string Letters(string elementName)
+        {
+            if (Environment.GetEnvironmentVariable("CUPHEAD_PROMPTS") == "xbox") return elementName;
+            switch (elementName)
+            {
+                case "A": return "B";
+                case "B": return "A";
+                case "X": return "Y";
+                case "Y": return "X";
+                default: return elementName;
+            }
+        }
+
         // Pad mode has no keyboard or mouse, but Rewired still read and mapped both every frame for
         // both players (Unity input calls under box64: a measurable part of each frame). In pad mode
         // they are switched off (CUPHEAD_RWLITE=0 keeps them).

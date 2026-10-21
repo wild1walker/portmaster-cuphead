@@ -67,6 +67,7 @@ static class Patches
     public static readonly (string, Action<ModuleDefinition>)[] Android =
     {
         ("rewired-android-input", RewiredAndroid),
+        ("pad-prompts-android", PadPromptsAndroid),
         ("gog-offline", GogOffline),
         ("dlc-from-gog-install", DlcFromGogInstall),
         ("fonts-lazy", FontsLazy),
@@ -179,6 +180,16 @@ static class Patches
         var get = md.Body.Instructions.First(i => i.Operand is MethodReference r && r.Name == "get_elementIdentifierName");
         var il = md.Body.GetILProcessor();
         il.InsertAfter(get, il.Create(OpCodes.Call, HelperMethod(m, "Pad", "FriendlyName", m.TypeSystem.String, m.TypeSystem.String)));
+    }
+
+    // On the Android player the prompts are the Xbox pad's letters by position; CupheadPort.Pad.Letters
+    // shows the handheld's own letters (Nintendo layout unless CUPHEAD_PROMPTS=xbox).
+    static void PadPromptsAndroid(ModuleDefinition m)
+    {
+        var md = Method(Type(m, "CupheadInput"), "InputDisplayForButton");
+        var get = md.Body.Instructions.First(i => i.Operand is MethodReference r && r.Name == "get_elementIdentifierName");
+        var il = md.Body.GetILProcessor();
+        il.InsertAfter(get, il.Create(OpCodes.Call, HelperMethod(m, "Pad", "Letters", m.TypeSystem.String, m.TypeSystem.String)));
     }
 
     // AbstractCupheadCamera.UpdateRect letterboxes to 16:9; CupheadPort.Aspect fills a narrower
