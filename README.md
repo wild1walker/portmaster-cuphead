@@ -4,7 +4,9 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 [PortMaster](https://portmaster.games/).
 
 - **For:** players with a handheld that runs PortMaster and has 32-bit ARM libraries (tested on an
-  Anbernic RG34XX-SP with Knulli).
+  Anbernic RG34XX-SP with Knulli). Handhelds whose firmware has no 32-bit libraries get a 64-bit
+  build instead, picked by the port itself ([64-bit-only handhelds](#64-bit-only-handhelds); new,
+  not tested on a handheld yet).
 - **You need your own copy of the game.** This port contains **no game files**, and neither do its
   releases. You bring Cuphead for macOS from GOG; the port turns it into a handheld version the
   first time you start it.
@@ -19,6 +21,7 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 - [What you need](#what-you-need)
 - [Install](#install)
 - [The first launch (setup)](#the-first-launch-setup)
+- [64-bit-only handhelds](#64-bit-only-handhelds)
 - [Controls](#controls)
 - [Performance](#performance)
 - [Options](#options)
@@ -32,13 +35,13 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 
 | | |
 |---|---|
-| **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. |
-| **Tested on** | Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480 screen) with Knulli. Other handhelds and firmwares have not been tried yet. ROCKNIX: unknown. Firmwares without 32-bit libraries cannot run this port. |
+| **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. A 64-bit ARM firmware without them gets the [64-bit build](#64-bit-only-handhelds). |
+| **Tested on** | Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480 screen) with Knulli. Other handhelds and firmwares have not been tried yet. ROCKNIX: unknown. The 64-bit build has not been run on a handheld yet. |
 | **The game** | Cuphead for **macOS** from **GOG**, version 1.3.4, with or without the DLC. Either GOG's macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. |
 | **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG gives you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
-| **Free space** | About 10 GB free on the card while the setup runs. About 2.5 GB stay used afterwards. |
+| **Free space** | About 10 GB free on the card while the setup runs (the 64-bit build: about 12 GB). About 2.5 GB stay used afterwards. |
 | **Wi-Fi** | On the first launch only, to download Unity's Android player from Unity (about 190 MB). No Wi-Fi? See step 4 below. |
-| **Time** | The first launch takes about 1 to 3 hours, once. Every launch after that starts the game straight away. |
+| **Time** | The first launch takes about 1 to 3 hours, once (the 64-bit build: several hours more). Every launch after that starts the game straight away. |
 
 ## Install
 
@@ -101,6 +104,35 @@ Good to know:
 You can also do this conversion on a computer in minutes instead of hours: see
 [docs/building.md](docs/building.md).
 
+## 64-bit-only handhelds
+
+Some firmwares have no 32-bit ARM libraries at all (the port's launcher sees that by itself). Unity
+made a 64-bit Android player only for game code that is compiled ahead of time (IL2CPP), and only
+from a later release of Cuphead's Unity line (2017.4.40f1 instead of the game's 2017.4.9f1). On
+such a handheld the port therefore builds a **64-bit version**: the same game, the same data and
+the same patches, with the game's code compiled for Unity's 64-bit player.
+
+- **Install it the same way** (unzip `cuphead.zip`, copy your game into `gamedata/`, start Cuphead).
+  The setup asks the same question and does the same steps, plus one: it **compiles the game's
+  code on the handheld**.
+- **It takes longer:** several hours more than the 32-bit setup on a small handheld. It can be
+  interrupted and continues where it stopped, as the 32-bit setup does.
+- **It needs about 12 GB free** on the card during the setup, and Wi-Fi: it downloads about 7 MB of
+  Unity's 2017.4.40f1 player (or reads `UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe` from
+  `gamedata/`) and the tools that compile the code (Unity's IL2CPP, parts of Google's Android NDK,
+  a compiler).
+- **Handhelds too weak to compile it** (too little memory, or the setup says it cannot): build the
+  64-bit version on a computer with `build64.sh` instead (much faster there), and copy the result
+  to the handheld ([docs/building.md](docs/building.md)).
+- **Its files are its own,** so a card moved between a 32-bit and a 64-bit-only handheld keeps both
+  builds apart: everything of the 64-bit build is in `ports/cuphead/arm64/` (saves:
+  `ports/cuphead/arm64/data/`). When the card already has the 32-bit build's saves, the 64-bit setup
+  copies them once. Each build needs its own setup on a card: if the setup's tools were removed by
+  the other build's setup, it says so; install `cuphead.zip` again and copy your game in again.
+- **Status:** new. The parts it is built from run on 64-bit handhelds, but this build of Cuphead
+  has not been played on one yet, and the step that compiles the code on the handheld is still
+  being finished: until then the setup stops there and says so.
+
 ## Controls
 
 The buttons work **by position**, as on an Xbox controller: the **bottom face button jumps and
@@ -117,7 +149,7 @@ in the Nintendo layout: **B** bottom, **A** right, **Y** left, **X** top, as on 
 Powkiddy and TrimUI handhelds. So the prompts say B for jump and confirm. If your handheld has
 Xbox letters (A at the bottom), set `CUPHEAD_PROMPTS=xbox` (see [Options](#options)).
 
-Saves and settings are in `ports/cuphead/data/`.
+Saves and settings are in `ports/cuphead/data/` (the 64-bit build: `ports/cuphead/arm64/data/`).
 
 ## Performance
 
@@ -162,6 +194,9 @@ More options for testing and measuring: [docs/technical.md](docs/technical.md#op
 - **Only GOG's macOS version** has been tested. The Windows version does not work.
 - **Other handhelds:** only the RG34XX-SP with Knulli has been tested. If you try another one,
   please report how it went.
+- **The 64-bit build** (handhelds without 32-bit libraries) has not been played on a handheld yet,
+  and its setup cannot compile the game's code on the handheld yet: build it on a computer
+  (`build64.sh`) for now.
 
 ## If the setup stops
 
@@ -175,6 +210,10 @@ PortMaster shows the setup's message. The most common ones:
 | "Unpacking the installers needs about 9 GB free on the card" | Make space on the card, then start Cuphead again. |
 | "Downloading Unity's player failed: is Wi-Fi on?" | Turn on Wi-Fi, or put the Unity file from step 4 into `gamedata/`. |
 | "PortMaster's 7-Zip is missing: update PortMaster." | Update PortMaster, then start Cuphead again. |
+| "This release cannot compile Cuphead's code on the handheld yet" (64-bit build) | Build the 64-bit version on a computer with `build64.sh` ([docs/building.md](docs/building.md)). |
+| "Compiling the game's code failed" (64-bit build) | Start Cuphead again: it continues where it stopped. If it fails again, build the 64-bit version on a computer instead, and [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |
+| "Unpacking the installers and building the 64-bit version need about 12 GB free" | Make space on the card, then start Cuphead again. |
+| "The setup's tools (ports/cuphead/setup/) are gone" | The other build's setup removed them: install `cuphead.zip` again, copy your game into `gamedata/` again, start Cuphead. |
 | Any other message | Start Cuphead again (the setup continues where it stopped). If it stops again, [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |
 
 ## Getting help and reporting a bug

@@ -6,13 +6,17 @@ handheld's 32-bit (armhf) Linux userland, plays the Java side of Unity's Android
 the player uses. No Android, no emulator, no x86 translation. Developed on an Anbernic RG34XX-SP
 (Knulli: Allwinner H700, Mali-G31, 1 GB RAM, 720x480).
 
+Firmwares without a 32-bit userland get a [64-bit build](#the-64-bit-build) instead: the same
+data and patches, the game's code compiled with IL2CPP for Unity's 64-bit (arm64-v8a) player.
+
 The player's guide is the [README](../README.md); building is in [building.md](building.md).
 
 ## The release and the setup
 
 The release zip (`cuphead.zip`, made by `package.sh`) holds `Cuphead.sh` (the launcher) and
 `cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, the setup in `setup/` and every
-licence in `licenses/`. No game files and nothing from Unity.
+licence in `licenses/`; for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.sh`
+and `setup64/`. No game files and nothing from Unity.
 
 On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's patcher
 (`PATCHER_FILE`, `PATCHER_QUESTIONS`; a failure is a `PATCH_FAIL_MSG:` line the patcher shows):
@@ -46,6 +50,84 @@ At every launch `Cuphead.sh` presents the built-in pad to the game as an Android
 sound (PCM piped into `pw-cat`/`pacat` when a sound server holds the card), writes a line of frame
 statistics every 10 s to `log.txt` (`UA_FPS`), runs gptokeyb only for the exit hotkey
 (Select+Start) and puts `/lib32` and `/usr/lib32` first in the library path (Knulli).
+
+## The 64-bit build
+
+Unity's 64-bit ARM Android players exist only for IL2CPP, and Unity 2017.4 has them from
+2017.4.16f1; Cuphead is 2017.4.9f1. A firmware without the 32-bit loader therefore runs Cuphead's
+code compiled ahead of time by the IL2CPP of the line's last release, 2017.4.40f1, on that release's
+IL2CPP player (a line keeps its serialized layouts), with the runtime's aarch64 build (`ua_host64`,
+portmaster-unity's `runtime/host/out/arm64/ua_host`; portmaster-unity is not public yet).
+
+**Which build** (`Cuphead.sh`, decided once, before anything else is written to the log):
+
+| system | build |
+|---|---|
+| `/lib/ld-linux-armhf.so.3` exists | the 32-bit build, exactly as before (its own lines of `Cuphead.sh`, unchanged) |
+| no 32-bit loader, `uname -m` = `aarch64` | the 64-bit build: `Cuphead.sh` sources `cuphead/launch64.sh`, which runs its own setup and the game |
+| `CUPHEAD_ROUTE=64` | the 64-bit build on a system that has both (a test switch, e.g. on the RG34XX-SP) |
+| anything else | a message: the firmware needs 32-bit (armhf) support |
+
+**Its own files**, so a card moved between a 32-bit and a 64-bit-only handheld never mixes the
+two: `ua_host64`, `setup64/` (work folder `gamedata/.setup64/`), the marker `.cuphead_ready64`,
+and `arm64/`, the root `ua_host64` runs: `lib/` (`libmain.so`, `libunity.so`, `libil2cpp.so`), the
+APK and `android_package.json`, the GOG `.info` files beside the APK (the DLC check), `data/`
+(saves; the 32-bit build's `data/` without its shader cache is copied there once, when the card
+has one). The setup's tools stay in `setup/` (shared with the 32-bit setup, unchanged); the 64-bit
+setup removes `setup/` and `setup64/` when it is done, but keeps `setup/` on a system that can still
+run the 32-bit build when that one is not set up yet. At run time: no `/lib32` library path, SDL's
+own audio driver choice (a 64-bit program reaches the sound server directly), the same pad name,
+PortMaster's pad mapping, the exit hotkey for `ua_host64`.
+
+**The setup** (`setup64/patchscript`; markers in `gamedata/.setup64/`, PortMaster's
+`PATCH_FAIL_MSG:` lines, log `patchlog.txt`). First the setup's Python, as in the 32-bit setup,
+and the converter copied into the work folder in portmaster-unity's own layout
+(`converter/convert/pmunity` beside `converter/tools/il2cpp`, where the IL2CPP step finds its
+scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2cpp/`). Then:
+
+1. **The game** as in the 32-bit setup (`Cuphead.app` or the GOG installers; 12 GB free for the
+   installers, which stay until the end, plus the IL2CPP build).
+2. **Unity's player:** `pmunity player fetch 2017.4.40f1 --backend il2cpp --abi arm64-v8a` (about
+   7 MB read from Unity's installer with range requests; the whole installer as a fallback, or
+   `UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe` in `gamedata/`); `libmain.so` and
+   `libunity.so` checked against their SHA-256.
+3. **Conversion:** exactly the 32-bit setup's (`convert/cuphead.json`, `animclips.py`, the texture
+   question).
+4. **The code:** `codepatch --target=android` on the original `Assembly-CSharp.dll` (the data's
+   `Managed/` stays as it is) and `CupheadPort.dll`, kept in the work folder (`managed/`), as the
+   32-bit setup applies them; the patches are IL patches of the assembly IL2CPP compiles, so they
+   come first.
+5. **IL2CPP on the handheld:** `pmunity il2cpp fetch 2017.4.40f1 --on-device --abi arm64-v8a --net 2
+   --pkg <player> --home <dir>` (the toolchain), then `pmunity il2cpp <data> <out> --on-device
+   --abi arm64-v8a --unity 2017.4.40f1 --pkg <player> --home <dir> --managed-file
+   <managed>/Assembly-CSharp.dll --managed-file <managed>/CupheadPort.dll [--link-xml
+   setup64/link.xml]` (`<out>/lib/arm64-v8a/libil2cpp.so`, `<out>/Data/Managed/...`,
+   `<out>/il2cpp.json`). `--unity`, `--net` and `--managed-file` come from portmaster-unity's 2017.4
+   IL2CPP work, `--on-device` (run natively, no Docker; jobs from the free memory; resumable) from
+   its on-device work, `link.xml` (what Cuphead's code reaches by reflection) from this repository's
+   IL2CPP work ([il2cpp.md](il2cpp.md)). A converter whose `il2cpp --help` lacks `--on-device` or
+   `--managed-file` stops the setup here with a message pointing to `build64.sh`. Free space
+   checked before: 3 GB (an estimate until measured on a handheld).
+6. **Packing:** `pmunity android-data --il2cpp <out>` (same name, package and options as the 32-bit
+   packing, without the assembly patch, the helper, Mono's config and dllmap: IL2CPP's output
+   holds the code, and IL2CPP reads no dllmap, so the helper's `DllImport("SDL2")` goes through
+   ua_host's plugin map, `setup64/plugins-il2cpp.json`). android-data rewrites the 2017.4.9f1 data
+   for the 2017.4.40f1 player.
+7. **Installing** into `arm64/`, `.cuphead_ready64`, then the tools and (unless `keep_installers=1`)
+   the installers are removed.
+
+At run time `launch64.sh` also sets `CUPHEAD_CODEWARM=0`: the helper's code warm-up only helps
+Mono's JIT.
+
+`build64.sh` makes the same build on a PC or Mac (IL2CPP in Docker there), for handhelds too weak
+to compile the code ([building.md](building.md)); its folder is what this setup leaves in
+`ports/cuphead/` (`ua_host64`, `launch64.sh`, `arm64/`, `.cuphead_ready64`).
+
+Rehearsed in an aarch64 container (a handheld's busybox tools, a trimmed copy of the game): every
+step up to IL2CPP, the stop with its message there, and, with a stand-in for the IL2CPP build, the
+packing and the install. Not run yet: the IL2CPP build itself (portmaster-unity's 2017.4 and
+on-device IL2CPP work), anything of the 64-bit build on a handheld, and IL2CPP data over 2 GiB
+(Cuphead's is about 2.3 GB: APK plus OBB; see portmaster-unity's IL2CPP notes).
 
 ## Status (RG34XX-SP)
 
@@ -98,6 +180,7 @@ Set in the environment, e.g. as `export` lines in `Cuphead.sh` (after `get_contr
 | `CUPHEAD_RTFIT`, `CUPHEAD_HEAVYSPRITES`, `CUPHEAD_DECOR`, `CUPHEAD_CAMTRIM`, `CUPHEAD_ATLASTRIM` `=0` | turn off one of the helper's defaults above (for comparisons) |
 | `UA_FPS=<seconds>` | how often `log.txt` gets a line of frame statistics (launcher default 10) |
 | `UA_PAD_NAME` | the pad name the game sees (launcher default `Xbox Wireless Controller`) |
+| `CUPHEAD_ROUTE=64` | a test switch: the [64-bit build](#the-64-bit-build) on a system that can run the 32-bit one (set it above the launcher's route choice, e.g. as an `export` line right after `get_controls`) |
 
 The runtime has more `UA_*` switches of its own (its documentation, docs/runtime.md, is in its
 repository, which is not public yet).
