@@ -34,14 +34,17 @@ Full guide, known issues and bug reports: https://github.com/wild1walker/portmas
 3. Wait. The setup unpacks the game, downloads Unity's player, converts the game for the handheld
    and packs it: about 1 to 3 hours, once. If it is interrupted (battery, power button), start
    Cuphead again: it continues where it stopped. Its log is `ports/cuphead/patchlog.txt`.
-4. When it is done the game starts. You can delete the installers in `gamedata/` then.
+4. When it is done the game starts, and the setup deletes the installers in `gamedata/` (set
+   `keep_installers=1` in `setup.txt` to keep them).
 
 ## Playing
 
-- The buttons work by position, as on an Xbox pad: the bottom face button jumps and confirms.
-  The on-screen prompts show the letters printed on the handheld, Nintendo layout (B bottom, A
-  right, Y left, X top). For a handheld with Xbox letters, add `export CUPHEAD_PROMPTS=xbox` to
-  `Cuphead.sh` (below the line `get_controls`).
+- The buttons work by position, as on an Xbox pad. With the letters of a Nintendo-layout handheld:
+  B (bottom) jump and confirm, Y (left) shoot, A (right) EX shot and back, X (top) dash, L1
+  switch weapon, R1 lock, Start pause. Options > Controls changes them. The on-screen prompts
+  show the letters printed on the handheld, Nintendo layout (B bottom, A right, Y left, X top).
+  For a handheld with Xbox letters, add `export CUPHEAD_PROMPTS=xbox` to `Cuphead.sh` (below the
+  line `get_controls`).
 - **Select + Start** quits.
 - Saves and settings: `ports/cuphead/data/`.
 - The last run's log: `ports/cuphead/log.txt`.

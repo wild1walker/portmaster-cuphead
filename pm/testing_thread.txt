@@ -1,0 +1,48 @@
+Instructions to install the Testing Zip:
+Drop the .zip into your Portmaster autoinstall folder and run Portmaster.
+or
+run via ssh: harbourmaster install "zip url from discord"
+
+Game Information
+Title: Cuphead
+URL: https://www.gog.com/game/cuphead
+
+Instructions:
+Needs your own copy of Cuphead for macOS from GOG (1.3.4, with or without The Delicious Last
+Course). Copy GOG's macOS installers (the .pkg files, game and DLC) or the installed Cuphead.app
+into ports/cuphead/gamedata/, then start Cuphead from Ports.
+The first launch builds the game on the handheld: it asks for the texture quality (Medium is the
+tested one), downloads Unity's Android player from Unity (about 190 MB, needs Wi-Fi), and takes 1 to
+3 hours once. About 10 GB free space during the setup. Keep the handheld plugged in; an interrupted
+setup continues on the next launch. The setup log is ports/cuphead/patchlog.txt, the game's
+ports/cuphead/log.txt.
+Needs a 32-bit (armhf) userland with OpenGL ES 3; firmwares without 32-bit libraries cannot run it
+yet.
+
+| Button | Action |
+|--|--|
+|D-pad| Move; aim while Lock is held |
+|B (bottom)| Jump; confirm in menus |
+|Y (left)| Shoot |
+|A (right)| EX shot; Super Art with five cards; back in menus |
+|X (top)| Dash |
+|L1| Switch weapon |
+|R1| Lock (stand still and aim) |
+|Start| Pause |
+|Select + Start| Quit |
+
+CFW Tests:
+[ ] AmberELEC
+[ ] dArkOS
+[ ] MuOS
+ROCKNIX
+-> [ ] Libmali
+-> [ ] Panfrost
+-> [ ] Adreno (Optional)
+[x] Knulli (RG34XX-SP)
+
+Resolutions:
+[ ] 480x320 (Optional)
+[ ] 640x480
+[ ] 720x720 (RGB30) (Optional)
+[ ] Higher resolutions (e.g., 1280)

@@ -104,13 +104,22 @@ You can also do this conversion on a computer in minutes instead of hours: see
 ## Controls
 
 The buttons work **by position**, as on an Xbox controller: the **bottom face button jumps and
-confirms** in menus, and the other buttons follow the game's usual controller layout by position.
+confirms** in menus. Below, each face button is named by its position and by the letter printed on
+Anbernic, Miyoo, Powkiddy and TrimUI handhelds (Nintendo layout).
 
-| Button | Does |
-|---|---|
-| Bottom face button | jump; confirm in menus |
-| The other buttons | the game's normal controller layout, by position (as on an Xbox pad) |
-| **Select + Start** | quit the game |
+| Button | In the game | In menus |
+|---|---|---|
+| D-pad | move; aim while Lock is held | move the selection |
+| Bottom face button (**B**) | jump | confirm |
+| Left face button (**Y**) | shoot | |
+| Right face button (**A**) | EX shot; with five cards full, your Super Art | back |
+| Top face button (**X**) | dash | delete a save (on the save screen) |
+| **L1** | switch weapon | |
+| **R1** | lock: stand still and aim | |
+| **Start** | pause | |
+| **Select + Start** | quit the game | |
+
+These are Cuphead's own default controls; **Options > Controls** in the game changes them.
 
 **Button prompts.** The letters the game shows on screen are the ones printed on your handheld,
 in the Nintendo layout: **B** bottom, **A** right, **Y** left, **X** top, as on Anbernic, Miyoo,
