@@ -38,13 +38,13 @@ fi
 if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
   if [ -f "$GAMEDIR/setup/patchscript" ] && [ -f "$controlfolder/utils/patcher.txt" ]; then
     export GAMEDIR DEVICE_ARCH controlfolder
-    chmod +x "$GAMEDIR/setup/patchscript"
+    $ESUDO chmod +x "$GAMEDIR/setup/patchscript"
     export PATCHER_FILE="$GAMEDIR/setup/patchscript"
     export PATCHER_GAME="Cuphead"
     export PATCHER_TIME="one to a few hours, once"
     export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
     source "$controlfolder/utils/patcher.txt"
-    $ESUDO kill -9 $(pidof gptokeyb) 2>/dev/null
+    $ESUDO kill -9 $(pidof gptokeyb gptokeyb2) 2>/dev/null
   fi
   if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
     pm_message "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (ports/cuphead/README.md; log: ports/cuphead/patchlog.txt)."
@@ -62,7 +62,7 @@ export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"   # PortMaster's mapping
 # client libraries) raw PCM piped into pw-cat / pacat
 export SDL_AUDIODRIVER=alsa
 export UA_FPS=${UA_FPS:-10}                     # a line of frame statistics every 10 s in log.txt
-chmod +x "$GAMEDIR/ua_host"
+$ESUDO chmod +x "$GAMEDIR/ua_host"
 
 $GPTOKEYB "ua_host" -c "$GAMEDIR/cuphead_hotkey.gptk" &   # exit hotkey only (Select+Start)
 pm_platform_helper "$GAMEDIR/ua_host"
