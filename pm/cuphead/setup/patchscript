@@ -132,4 +132,16 @@ done
 rm -rf "$W" "$D" "$GD/mono-etc" "$S"
 sync
 touch "$GAMEDIR/.cuphead_ready"
-step "setup finished: $(du -sm "$GAMEDIR" | cut -f1) MB. Your installers in gamedata/ can be deleted now."
+# the installers (or what is left of Cuphead.app) are not needed any more: removed, as PortMaster
+# ports' setups do, unless setup.txt says keep_installers=1
+keep=$(sed -n 's/^[[:space:]]*keep_installers[[:space:]]*=[[:space:]]*\([01]\).*/\1/p' "$GAMEDIR/setup.txt" 2>/dev/null | tail -1)
+left=$(ls -d "$GD"/*.pkg "$GD"/*.app "$GD"/goggame-*.info 2>/dev/null)
+if [ -n "$left" ] && [ "$keep" != 1 ]; then
+  freed=$(IFS=$'\n'; du -scm $left 2>/dev/null | tail -1 | cut -f1)
+  (IFS=$'\n'; rm -rf $left)
+  echo "removed the installers from gamedata/ (${freed} MB; keep_installers=1 in setup.txt keeps them)"
+elif [ -n "$left" ]; then
+  echo "kept the installers in gamedata/ (keep_installers=1)"
+fi
+sync
+step "setup finished: $(du -sm "$GAMEDIR" | cut -f1) MB."

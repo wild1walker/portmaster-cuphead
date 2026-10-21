@@ -7,3 +7,8 @@
 #   fast    about 2.5x faster to encode, so the setup takes roughly an hour less on an H700
 #           device; slightly lower texture quality (hard to see at the handheld's screen size)
 texture_quality=medium
+#
+# keep_installers: 1 keeps your copy of the game (GOG's .pkg installers or Cuphead.app) in
+#   gamedata/ after the setup; by default the setup deletes it once the game is built (it is not
+#   needed to play; about 5 GB with the DLC)
+keep_installers=0

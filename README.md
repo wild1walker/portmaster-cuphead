@@ -87,8 +87,10 @@ The first time you start Cuphead, PortMaster shows a setup screen with the progr
 2. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
    downloads and unpacks Unity's Android player, converts the game's graphics, textures and
    settings for the handheld (the long part), and packs everything for the player.
-3. **When it is done, the game starts.** You can then delete the installers or `Cuphead.app` from
-   `gamedata/`.
+3. **When it is done, the game starts.** The setup then deletes your installers (or what is left
+   of `Cuphead.app`) from `gamedata/`, since the built game does not need them: about 5 GB back
+   with the DLC. To keep them, set `keep_installers=1` in `ports/cuphead/setup.txt` before the
+   setup finishes.
 
 Good to know:
 
