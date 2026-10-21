@@ -1,0 +1,152 @@
+name: Problem report
+description: The setup stops, the game does not start, or something goes wrong in the game.
+title: "[Problem] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Before you start, please check the README's
+        [Known issues](https://github.com/wild1walker/portmaster-cuphead#known-issues) and
+        [If the setup stops](https://github.com/wild1walker/portmaster-cuphead#if-the-setup-stops).
+
+        **Never attach game files.** Logs are fine.
+
+  - type: dropdown
+    id: step
+    attributes:
+      label: Where did it go wrong?
+      options:
+        - During the setup (the first launch)
+        - Starting the game (after the setup finished)
+        - In the game
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead? If the setup showed a message, copy it here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to make it happen again
+      description: For problems in the game, which level or menu, and what you did. "It happens every time" or "only once" helps too.
+      placeholder: |
+        1. Start the game
+        2. Go to ...
+        3. ...
+
+  - type: input
+    id: device
+    attributes:
+      label: Handheld
+      description: The model.
+      placeholder: Anbernic RG34XX-SP
+    validations:
+      required: true
+
+  - type: dropdown
+    id: firmware
+    attributes:
+      label: Firmware
+      options:
+        - Knulli
+        - ROCKNIX
+        - muOS
+        - ArkOS
+        - Other (please say which below)
+    validations:
+      required: true
+
+  - type: input
+    id: firmware-version
+    attributes:
+      label: Firmware version
+      placeholder: e.g. the release name or date shown in the firmware's system information
+    validations:
+      required: true
+
+  - type: input
+    id: portmaster-version
+    attributes:
+      label: PortMaster version
+      description: If you are not sure, write "unknown".
+    validations:
+      required: true
+
+  - type: input
+    id: release
+    attributes:
+      label: Which release of this port?
+      description: The release name from the Releases page (a date, such as 2026.10.21).
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Your copy of the game
+      options:
+        - GOG macOS installers (.pkg)
+        - Cuphead.app copied from a Mac
+        - Something else (please say what below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dlc
+    attributes:
+      label: The Delicious Last Course (DLC)
+      options:
+        - Installed
+        - Not installed
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: texture
+    attributes:
+      label: Texture quality chosen in the setup
+      options:
+        - Medium
+        - Fast
+        - Not sure
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Drag and drop these files from `ports/cuphead/` into this box:
+        - `log.txt`: the last time the game ran (the time before that: `log.prev.txt`)
+        - `patchlog.txt`: the setup
+
+        On Knulli they are in `roms/ports/cuphead/` on the card with your games, or
+        `share/roms/ports/cuphead/` over the network. Remove anything personal if you see it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
+      description: Free space on the card, options you changed in Cuphead.sh, other ports that work or don't, screenshots of the problem (no game files).
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I did not attach any game files.
+          required: true
+        - label: I checked the known issues in the README.
+          required: true

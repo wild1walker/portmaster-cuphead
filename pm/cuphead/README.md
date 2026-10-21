@@ -1,40 +1,51 @@
 # Cuphead on PortMaster
 
-Cuphead runs on Unity's own Android player, run natively on the handheld's 32-bit userland by
-[portmaster-unity](https://github.com/wild1walker/portmaster-unity)'s `ua_host`. No game files come
-with this port: you provide your own copy, and the first launch builds the game from it on the
-handheld.
+This port contains **no game files**: you provide your own copy of Cuphead, and the first launch
+builds the handheld version from it. Cuphead runs on Unity's own Android player, run directly on
+the handheld's 32-bit Linux by [portmaster-unity](https://github.com/wild1walker/portmaster-unity)
+(no Android, no emulator).
+
+Full guide, known issues and bug reports: https://github.com/wild1walker/portmaster-cuphead
 
 ## What you need
 
-- **Cuphead for macOS, version 1.3.4, from GOG** (the DLC, The Delicious Last Course, is picked up
-  when it is there). Either:
-  - the installed `Cuphead.app`, copied from a Mac (keep the folder as it is), or
-  - GOG's macOS installers (`.pkg`): the game's and, if you have it, the DLC's.
+- **Cuphead for macOS from GOG** (version 1.3.4; GOG's current macOS installers say 1.3.9 in their
+  names and hold the same build). The DLC, The Delicious Last Course, is picked up when it is
+  there. Either:
+  - GOG's macOS installers (`.pkg`): the game's and, if you have it, the DLC's, or
+  - the installed `Cuphead.app`, copied from a Mac (keep the folder as it is).
+
   The Windows version does not work (its shaders are Direct3D only).
-- Wi-Fi on the first launch, to download Unity 2017.4.9f1's Android player from Unity (about
+- **Wi-Fi on the first launch**, to download Unity 2017.4.9f1's Android player from Unity (about
   190 MB). Or put `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` from Unity's download
   archive into `gamedata/` yourself.
-- About 10 GB free on the card during the setup (installers + unpacked game + the converted
-  game); about 2.5 GB stay afterwards.
-- A handheld with a 32-bit (armhf) userland and GLES 3 (made on an Anbernic RG34XX-SP with Knulli).
+- **About 10 GB free** on the card during the setup; about 2.5 GB stay used afterwards.
+- **A handheld with a 32-bit (armhf) userland** and OpenGL ES 3 (tested on an Anbernic RG34XX-SP
+  with Knulli).
 
 ## Setting it up
 
-1. Copy `Cuphead.app` or the `.pkg` installers into `ports/cuphead/gamedata/`.
-2. Launch Cuphead from the Ports menu. PortMaster's patcher shows the setup's progress: it unpacks
-   the game, downloads and unpacks Unity's player, converts the game (GLES 3 shaders, textures
-   for the small screen, settings) and packs it for the player. It takes one to a few hours. If it
-   is interrupted (battery, power button), launch again: it continues where it stopped. The log is
-   `ports/cuphead/patchlog.txt`.
-3. When it is done the game starts. The installers in `gamedata/` can be deleted then.
+1. Copy the `.pkg` installers or `Cuphead.app` into `ports/cuphead/gamedata/`.
+2. Start Cuphead from the Ports menu. PortMaster first asks for the texture quality:
+   - **Medium** (recommended): what the port is tested with.
+   - **Fast**: the setup takes about an hour less, with slightly less exact textures.
 
-The setup screen first asks for the texture quality: Medium (recommended, what the port is tested
-with) or Fast (the textures are encoded about 2.5 times faster, roughly an hour less setup on an H700
-device, at slightly lower quality). With an older PortMaster that asks no questions,
-`ports/cuphead/setup.txt` sets it (`texture_quality=fast`).
+   With an older PortMaster that asks no questions, `ports/cuphead/setup.txt` decides
+   (`texture_quality=fast`).
+3. Wait. The setup unpacks the game, downloads Unity's player, converts the game for the handheld
+   and packs it: about 1 to 3 hours, once. If it is interrupted (battery, power button), start
+   Cuphead again: it continues where it stopped. Its log is `ports/cuphead/patchlog.txt`.
+4. When it is done the game starts. You can delete the installers in `gamedata/` then.
 
-Saves and settings: `ports/cuphead/data/`. Select+Start quits.
+## Playing
+
+- The buttons work by position, as on an Xbox pad: the bottom face button jumps and confirms.
+  The on-screen prompts show the letters printed on the handheld, Nintendo layout (B bottom, A
+  right, Y left, X top). For a handheld with Xbox letters, add `export CUPHEAD_PROMPTS=xbox` to
+  `Cuphead.sh` (below the line `get_controls`).
+- **Select + Start** quits.
+- Saves and settings: `ports/cuphead/data/`.
+- The last run's log: `ports/cuphead/log.txt`.
 
 ## Licences
 

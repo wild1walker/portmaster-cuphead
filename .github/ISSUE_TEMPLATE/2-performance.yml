@@ -1,0 +1,101 @@
+name: Performance report
+description: A level or fight runs slowly, stutters or freezes for a moment.
+title: "[Performance] "
+labels: ["performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Some parts are known to run below 60 fps: see
+        [Performance](https://github.com/wild1walker/portmaster-cuphead#performance) in the README.
+        Reports about other places, or numbers that are much lower than those, help the most.
+
+        Tip: copying files to the card while you play makes the game stutter, and a handheld that
+        has been running for a long time gets warm and slower. Please say if either was the case.
+
+  - type: input
+    id: level
+    attributes:
+      label: Level or fight
+      description: The level or boss name, and the phase if you know it.
+      placeholder: e.g. Glumstone the Giant, second phase
+    validations:
+      required: true
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - Simple
+        - Regular
+        - Expert
+        - Not a fight (map, menu, cutscene)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What did you notice?
+      multiple: true
+      options:
+        - Slow all the time (low frame rate)
+        - Short stutters or pauses
+        - A long freeze
+        - Slow loading
+    validations:
+      required: true
+
+  - type: input
+    id: fps
+    attributes:
+      label: Frames per second, if you know them
+      description: "`log.txt` gets a line of frame statistics every 10 seconds; attaching it below is enough."
+
+  - type: input
+    id: device
+    attributes:
+      label: Handheld and firmware
+      placeholder: Anbernic RG34XX-SP, Knulli (version)
+    validations:
+      required: true
+
+  - type: input
+    id: release
+    attributes:
+      label: Which release of this port?
+      placeholder: the release name from the Releases page (a date)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: texture
+    attributes:
+      label: Texture quality chosen in the setup
+      options:
+        - Medium
+        - Fast
+        - Not sure
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: |
+        Drag and drop `ports/cuphead/log.txt` from right after the slow part into this box
+        (it is replaced at the next launch; the one before is `log.prev.txt`).
+
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
+      description: Options you set in Cuphead.sh, how long the handheld had been running, anything else running at the time.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I did not attach any game files.
+          required: true

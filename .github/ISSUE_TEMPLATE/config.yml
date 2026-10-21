@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A problem with the tools for other Unity games
+    url: https://github.com/wild1walker/portmaster-unity/issues/new/choose
+    about: Porting another Unity game with portmaster-unity? Report it there. Cuphead problems belong here.
+  - name: PortMaster itself
+    url: https://portmaster.games/
+    about: Installing PortMaster, its menus, or ports other than Cuphead.

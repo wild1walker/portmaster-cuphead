@@ -1,0 +1,31 @@
+name: Feature request
+description: An idea for the port, or a handheld or firmware you would like it to support.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! One rule shapes what the port can do: by default it must look and play
+        exactly like the original game. Anything that changes the picture or the game play can only
+        be an option that is off unless you turn it on.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why? What would it help with?
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Your handheld and firmware (if it matters for this)
+      placeholder: e.g. Anbernic RG35XX H, Knulli
