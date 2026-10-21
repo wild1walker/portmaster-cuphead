@@ -25,17 +25,26 @@ mv -f "$GAMEDIR/log.txt" "$GAMEDIR/log.prev.txt" 2>/dev/null
 > "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
 echo "Cuphead: $CFW_NAME on $DEVICE_NAME ($DEVICE_ARCH), ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}, RAM $(awk '/MemTotal/{print int($2/1024)" MB"}' /proc/meminfo)"
 
+# Cuphead's Unity player is 32-bit: without the 32-bit loader (ua_host's interpreter) nothing can
+# run, so stop before the setup's hours of work
+if [ ! -e /lib/ld-linux-armhf.so.3 ]; then
+  pm_message "Cuphead needs a firmware with 32-bit (armhf) support, and this one has none (no /lib/ld-linux-armhf.so.3)."
+  sleep 8
+  pm_finish
+  exit 1
+fi
+
 # ---- first launch: build the game from your copy (PortMaster's patcher shows the progress)
 if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
   if [ -f "$GAMEDIR/setup/patchscript" ] && [ -f "$controlfolder/utils/patcher.txt" ]; then
     export GAMEDIR DEVICE_ARCH controlfolder
-    chmod +x "$GAMEDIR/setup/patchscript"
+    $ESUDO chmod +x "$GAMEDIR/setup/patchscript"
     export PATCHER_FILE="$GAMEDIR/setup/patchscript"
     export PATCHER_GAME="Cuphead"
     export PATCHER_TIME="one to a few hours, once"
     export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
     source "$controlfolder/utils/patcher.txt"
-    $ESUDO kill -9 $(pidof gptokeyb) 2>/dev/null
+    $ESUDO kill -9 $(pidof gptokeyb gptokeyb2) 2>/dev/null
   fi
   if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
     pm_message "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (ports/cuphead/README.md; log: ports/cuphead/patchlog.txt)."
@@ -48,6 +57,7 @@ fi
 # the built-in pad reaches the game as an Android gamepad (SDL GameController -> KeyEvent and
 # MotionEvent); Rewired knows Android pads by name, and this one maps as a standard gamepad
 export UA_PAD_NAME="${UA_PAD_NAME:-Xbox Wireless Controller}"
+export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"   # PortMaster's mapping of the built-in pad
 # audio: the system's default ALSA device, else (a sound server holding the card and no 32-bit
 # client libraries) raw PCM piped into pw-cat / pacat
 export SDL_AUDIODRIVER=alsa
@@ -65,7 +75,7 @@ if [ "$CFW_NAME" = "dArkOS" ] && command -v aplay >/dev/null && \
   echo "audio: kernel $kv, 32-bit ALSA unusable: pipe -> $ANDROID_SLES_PIPE_CMD"
 fi
 export UA_FPS=${UA_FPS:-10}                     # a line of frame statistics every 10 s in log.txt
-chmod +x "$GAMEDIR/ua_host"
+$ESUDO chmod +x "$GAMEDIR/ua_host"
 
 $GPTOKEYB "ua_host" -c "$GAMEDIR/cuphead_hotkey.gptk" &   # exit hotkey only (Select+Start)
 pm_platform_helper "$GAMEDIR/ua_host"
