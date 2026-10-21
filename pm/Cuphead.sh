@@ -51,6 +51,19 @@ export UA_PAD_NAME="${UA_PAD_NAME:-Xbox Wireless Controller}"
 # audio: the system's default ALSA device, else (a sound server holding the card and no 32-bit
 # client libraries) raw PCM piped into pw-cat / pacat
 export SDL_AUDIODRIVER=alsa
+# dArkOS on a kernel older than 5.6 (RK3326: 4.4): its 32-bit alsa-lib (Debian's libasound2t64,
+# 64-bit time_t) sends the time64 PCM ioctls those kernels do not know ("Inappropriate ioctl for
+# device"), and dArkOS runs no sound server for the pipe fallback. The PCM goes to the system's own
+# 64-bit aplay instead: the card directly (no dmix buffer: ~90 ms less lag), else, when the card is
+# busy, dArkOS's default device (plug -> dmix). aplay opens the device before it reads the pipe.
+kv=$(uname -r); kmaj=${kv%%.*}; kmin=${kv#*.}; kmin=${kmin%%.*}
+if [ "$CFW_NAME" = "dArkOS" ] && command -v aplay >/dev/null && \
+   { [ "$kmaj" -lt 5 ] || { [ "$kmaj" -eq 5 ] && [ "$kmin" -lt 6 ]; }; }; then
+  a="aplay -q -t raw -f S16_LE -r ${UA_AUDIO_RATE:-48000} -c 2 --buffer-time=40000"
+  export ANDROID_SLES_OUTPUT=${ANDROID_SLES_OUTPUT:-pipe}
+  export ANDROID_SLES_PIPE_CMD=${ANDROID_SLES_PIPE_CMD:-"$a -D plughw:0,0 --period-time=10000 - 2>/dev/null || { echo 'audio: plughw:0,0 busy, dmix' >&2; exec $a -; }"}
+  echo "audio: kernel $kv, 32-bit ALSA unusable: pipe -> $ANDROID_SLES_PIPE_CMD"
+fi
 export UA_FPS=${UA_FPS:-10}                     # a line of frame statistics every 10 s in log.txt
 chmod +x "$GAMEDIR/ua_host"
 
