@@ -34,7 +34,10 @@ On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's p
 4. **Conversion:** `pmunity convert` with `convert/cuphead.json` and the `animclips.py` plugin:
    GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, else
    `setup.txt`, else medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
-   settings and audio, and the helper's animation table.
+   settings and audio, and the helper's animation table. The shader settings keep the output the
+   handheld was tested with: `glcore4x` off, and `compute` off (Cuphead's one compute shader, the
+   post-processing stack's eye-adaptation histogram, keeps no OpenGL ES kernel, so the player
+   stays at Android 4.4's level and OpenGL ES 3.0, as tested).
 5. **Packing:** `pmunity android-data` writes the APK and OBB the player reads, with the code
    patcher run on the original `Assembly-CSharp.dll` (`codepatch --target=android`), the helper
    `CupheadPort.dll`, Mono's config and the dllmap for SDL2.

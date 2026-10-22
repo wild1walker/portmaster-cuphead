@@ -9,7 +9,8 @@
   "shaders": {
     "precision": "default-samplers",
     "bundles": "^tmpfont_",
-    "glcore4x": false
+    "glcore4x": false,
+    "compute": false
   },
   "settings": {
     "graphics_apis": [
