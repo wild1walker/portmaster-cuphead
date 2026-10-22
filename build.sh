@@ -29,6 +29,12 @@ DATA="$APP/Contents/Resources/Data"
 Q=${TEXTURE_QUALITY:-medium}
 case "$Q" in fast|medium) ;; *) echo "TEXTURE_QUALITY=$Q: medium or fast"; exit 1;; esac
 log() { echo "== $(date +%T) $*"; }
+# copy_tree <dir> <into>: <dir>'s contents into <into>, as a clone where the file system makes them
+# (APFS: cp -c; Btrfs/XFS: --reflink), else a plain copy (another drive, exFAT: cp -c then leaves
+# what it made, which the next try overwrites in place). macOS's -X: no extended attributes, which
+# exFAT would get as an AppleDouble ._ file beside every file (Linux's cp has no -X)
+copy_tree() { mkdir -p "$2"; cp -cRX "$1/." "$2/" 2>/dev/null || cp -R --reflink=auto "$1/." "$2/" 2>/dev/null ||
+  cp -RX "$1/." "$2/" 2>/dev/null || cp -R "$1/." "$2/"; }
 
 # ---- checks
 [ -f "$DATA/globalgamemanagers" ] || { echo "$APP: not a Unity macOS app (no Contents/Resources/Data)"; exit 1; }
@@ -49,7 +55,7 @@ export DOTNET_ROOT=$(dirname "$DOTNET")
 if [ ! -f "$OUT/Cuphead_Data/globalgamemanagers" ]; then
   log "copying the game data"
   rm -rf "$OUT/Cuphead_Data.tmp"
-  cp -cR "$DATA" "$OUT/Cuphead_Data.tmp" 2>/dev/null || cp -R --reflink=auto "$DATA" "$OUT/Cuphead_Data.tmp"
+  copy_tree "$DATA" "$OUT/Cuphead_Data.tmp"
   mv "$OUT/Cuphead_Data.tmp" "$OUT/Cuphead_Data"
 fi
 cp "$APP/Contents/Resources/"goggame-*.info "$OUT/" 2>/dev/null || true
@@ -80,7 +86,7 @@ cp "$PM/runtime/host/out/ua_host" "$D/"
 for f in Libs/armeabi-v7a/libmain.so Libs/armeabi-v7a/libunity.so MonoLibs/armeabi-v7a/libmono.so; do
   cp "$PLAYER/Variations/mono/Release/$f" "$D/lib/"
 done
-cp -cR "$OUT/android/zip/." "$D/" 2>/dev/null || cp -R --reflink=auto "$OUT/android/zip/." "$D/"
+copy_tree "$OUT/android/zip" "$D"
 cp "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/README.md" "$HERE/pm/cuphead/port.json" \
    "$HERE/pm/cuphead/setup.txt" "$D/"
 # licences of what the folder carries (as package.sh; the setup's tools are not in it)
