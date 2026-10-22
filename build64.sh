@@ -49,6 +49,12 @@ IHOME=${PMUNITY_IL2CPP_HOME:-$HOME/.cache/pmunity/il2cpp}
 IPKG=${PMUNITY_IL2CPP_PLAYER:-$IHOME/$UNITY/player-$ABI}
 case "$Q" in fast|medium) ;; *) echo "TEXTURE_QUALITY=$Q: medium or fast"; exit 1;; esac
 log() { echo "== $(date +%T) $*"; }
+# copy_tree <dir> <into>: <dir>'s contents into <into>, as a clone where the file system makes them
+# (APFS: cp -c; Btrfs/XFS: --reflink), else a plain copy (another drive, exFAT: cp -c then leaves
+# what it made, which the next try overwrites in place). macOS's -X: no extended attributes, which
+# exFAT would get as an AppleDouble ._ file beside every file (Linux's cp has no -X)
+copy_tree() { mkdir -p "$2"; cp -cRX "$1/." "$2/" 2>/dev/null || cp -R --reflink=auto "$1/." "$2/" 2>/dev/null ||
+  cp -RX "$1/." "$2/" 2>/dev/null || cp -R "$1/." "$2/"; }
 pmu() { (cd "$PM/convert" && "$PY" -m pmunity "$@"); }
 
 # ---- checks
@@ -81,7 +87,7 @@ cp "$OUT/build/helper/CupheadPort.dll" "$M/"
 if [ ! -f "$OUT/Cuphead_Data/globalgamemanagers" ]; then
   log "copying the game data"
   rm -rf "$OUT/Cuphead_Data.tmp"
-  cp -cR "$DATA" "$OUT/Cuphead_Data.tmp" 2>/dev/null || cp -R --reflink=auto "$DATA" "$OUT/Cuphead_Data.tmp"
+  copy_tree "$DATA" "$OUT/Cuphead_Data.tmp"
   mv "$OUT/Cuphead_Data.tmp" "$OUT/Cuphead_Data"
 fi
 cp "$APP/Contents/Resources/"goggame-*.info "$OUT/" 2>/dev/null || true
@@ -119,7 +125,7 @@ mkdir -p "$D/lib"
 cp "$HB/ua_host" "$D/"
 for f in libmain.so libunity.so; do cp "$IPKG/Variations/il2cpp/Release/Libs/$ABI/$f" "$D/lib/"; done
 cp "$SO" "$D/lib/"
-cp -cR "$OUT/android/zip/." "$D/" 2>/dev/null || cp -R --reflink=auto "$OUT/android/zip/." "$D/"
+copy_tree "$OUT/android/zip" "$D"
 cp "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/README.md" "$HERE/pm/cuphead/port.json" \
    "$HERE/pm/cuphead/setup.txt" "$D/"
 L="$D/licenses"; mkdir -p "$L"
