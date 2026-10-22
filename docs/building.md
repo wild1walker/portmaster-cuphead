@@ -21,13 +21,18 @@ It builds:
 - the helper `CupheadPort.dll`, compiled against your copy's assemblies (`GAME_MANAGED`; none of
   them is copied into the zip);
 - a self-contained linux-arm64 build of the code patcher (`codepatch`);
-- portmaster-unity's runtime (`ua_host`, in Docker) if it is not built yet;
+- portmaster-unity's runtime (`ua_host`, in Docker) if it is not built yet, and its 64-bit build
+  for the [64-bit build](technical.md#the-64-bit-build) (`ARCH=arm64 runtime/build.sh`:
+  `runtime/host/out/arm64/ua_host`, shipped as `cuphead/ua_host64`);
 - the setup's Python (`pm/build_pybundle.sh`: python-build-standalone's CPython 3.12 with UnityPy
   and the image libraries; it downloads what is not cached in `pm/cache/` yet);
 
-and copies the converter (`pmunity`) and every licence into it (`cuphead/licenses/`: this
-project's, portmaster-unity's and its THIRD_PARTY.md, libhybris, the video decoders, the .NET
-runtime, Mono.Cecil, the setup's Python and its packages).
+and copies the converter (`pmunity`), the 64-bit build's launch part and setup (`launch64.sh`,
+`setup64/` with portmaster-unity's `tools/il2cpp/` scripts) and every licence into it
+(`cuphead/licenses/`: this project's, portmaster-unity's and its THIRD_PARTY.md, libhybris, the
+video decoders of both runtimes (`*.arm64.txt`: the 64-bit one's), the .NET runtime, Mono.Cecil,
+the setup's Python and its packages). The 32-bit build's files are the same as without the 64-bit
+build; only `Cuphead.sh` (the route choice), `port.json` and the READMEs changed with it.
 
 Needs: Docker, Python 3 with pip, curl, the .NET 8 SDK (`DOTNET=` if `dotnet` is not on the PATH).
 

@@ -1,5 +1,6 @@
 # build output (dotnet's obj/ holds local paths)
 out/
+out64/
 obj/
 bin/
 __pycache__/

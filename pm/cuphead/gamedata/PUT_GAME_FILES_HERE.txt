@@ -5,5 +5,6 @@ Put your copy of Cuphead here, then launch Cuphead from the Ports menu:
   - or GOG's macOS installers (.pkg files: the game, and the DLC's).
 
 Optional: UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe (from Unity's download archive);
-otherwise the setup downloads it from Unity (about 190 MB, Wi-Fi needed).
+otherwise the setup downloads it from Unity (about 190 MB, Wi-Fi needed). On a handheld without
+32-bit support (the 64-bit build): UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe instead.
 The first launch builds the game on the handheld: one to a few hours, once. See ../README.md.
