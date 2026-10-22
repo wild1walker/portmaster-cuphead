@@ -36,7 +36,7 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 | | |
 |---|---|
 | **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. A 64-bit ARM firmware without them gets the [64-bit build](#64-bit-only-handhelds). |
-| **Tested on** | Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480 screen) with Knulli. Other handhelds and firmwares have not been tried yet. ROCKNIX: unknown. The 64-bit build has not been run on a handheld yet. |
+| **Tested on** | Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480 screen) with Knulli. Other handhelds and firmwares have not been tried yet. ROCKNIX: unknown. The 64-bit build (built on a computer) runs on the same handheld at 59.6 fps on the title screen; its setup on a handheld is not tried yet. |
 | **The game** | Cuphead for **macOS** from **GOG**, version 1.3.4, with or without the DLC. Either GOG's macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. |
 | **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG gives you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
 | **Free space** | About 10 GB free on the card while the setup runs (the 64-bit build: about 12 GB). About 2.5 GB stay used afterwards. |
@@ -129,8 +129,10 @@ the same patches, with the game's code compiled for Unity's 64-bit player.
   `ports/cuphead/arm64/data/`). When the card already has the 32-bit build's saves, the 64-bit setup
   copies them once. Each build needs its own setup on a card: if the setup's tools were removed by
   the other build's setup, it says so; install `cuphead.zip` again and copy your game in again.
-- **Status:** new, not yet tried on a real handheld. Its whole setup has run on a stand-in for a
-  64-bit-only handheld (a 64-bit ARM Linux container with 1 GB of memory and no 32-bit libraries):
+- **Status:** new. The 64-bit game, built on a computer with `build64.sh`, runs on an RG34XX-SP's
+  64-bit system: the title screen at 59.6 fps (59.3 on average over two minutes, its lowest
+  5-second window 57.2), using about 420 MB of memory. Its setup has not run on a handheld yet,
+  but the whole setup has run on a stand-in for a 64-bit-only handheld (a 64-bit ARM Linux container with 1 GB of memory and no 32-bit libraries):
   it compiled the game's code there and installed the game, which then reached its main menu.
   On a small handheld the compiling step takes hours.
 
