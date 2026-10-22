@@ -164,7 +164,7 @@ fi
 # installed; jobs follow the free memory; a killed build continues where it stopped. What this
 # step calls (a converter whose `il2cpp --help` lacks --on-device or --managed-file stops here
 # with a message):
-#   pm il2cpp fetch <version> --on-device --abi arm64-v8a --net 2 --pkg <player> --home <dir>
+#   pm il2cpp fetch <version> --on-device --abi arm64-v8a --net 2subset --pkg <player> --home <dir>
 #       Unity's il2cpp of <version>, the .NET 3.5 class libraries (Cuphead's runtime), the NDK's
 #       target files and the handheld's compiler tools, into <dir> (resumable)
 #   pm il2cpp <data> <out> --on-device --abi arm64-v8a --unity <version> --pkg <player> --home <dir>
@@ -185,7 +185,7 @@ if [ ! -f "$W/.step_il2cpp" ]; then
   case "$ih" in *--link-xml*) [ -f "$S64/link.xml" ] && extra+=(--link-xml "$S64/link.xml");; esac
   if [ ! -f "$W/.step_il2cpp_tools" ]; then
     step "downloading the tools that compile the game's code: Unity's IL2CPP $UNITY, parts of the Android NDK, compilers (needs Wi-Fi)"
-    run_last pm il2cpp fetch "$UNITY" --on-device --abi arm64-v8a --net 2 --pkg "$P" --home "$H" \
+    run_last pm il2cpp fetch "$UNITY" --on-device --abi arm64-v8a --net 2subset --pkg "$P" --home "$H" \
       || fail "Downloading the IL2CPP tools failed: $last (is Wi-Fi on? see patchlog.txt)"
     touch "$W/.step_il2cpp_tools"
   fi
