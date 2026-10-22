@@ -129,9 +129,10 @@ the same patches, with the game's code compiled for Unity's 64-bit player.
   `ports/cuphead/arm64/data/`). When the card already has the 32-bit build's saves, the 64-bit setup
   copies them once. Each build needs its own setup on a card: if the setup's tools were removed by
   the other build's setup, it says so; install `cuphead.zip` again and copy your game in again.
-- **Status:** new. The parts it is built from run on 64-bit handhelds, but this build of Cuphead
-  has not been played on one yet, and the step that compiles the code on the handheld is still
-  being finished: until then the setup stops there and says so.
+- **Status:** new, not yet tried on a real handheld. Its whole setup has run on a stand-in for a
+  64-bit-only handheld (a 64-bit ARM Linux container with 1 GB of memory and no 32-bit libraries):
+  it compiled the game's code there and installed the game, which then reached its main menu.
+  On a small handheld the compiling step takes hours.
 
 ## Controls
 
@@ -203,9 +204,9 @@ More options for testing and measuring: [docs/technical.md](docs/technical.md#op
 - **Only GOG's macOS version** has been tested. The Windows version does not work.
 - **Other handhelds:** only the RG34XX-SP with Knulli has been tested. If you try another one,
   please report how it went.
-- **The 64-bit build** (handhelds without 32-bit libraries) has not been played on a handheld yet,
-  and its setup cannot compile the game's code on the handheld yet: build it on a computer
-  (`build64.sh`) for now.
+- **The 64-bit build** (handhelds without 32-bit libraries) has not been played on a handheld yet:
+  its setup and the game have only run on a stand-in for one. Its setup takes several hours more
+  than the 32-bit one (compiling the game's code); `build64.sh` on a computer is much faster.
 
 ## If the setup stops
 
