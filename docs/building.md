@@ -59,6 +59,21 @@ Fast answer does (default `medium`, what the port is tested with). The folder ma
 on-device setup leaves in `ports/cuphead/` (same packing options, `setup.txt`, `port.json`,
 `licenses/`).
 
+## The 64-bit build (`build64.sh`, draft)
+
+For handhelds without a 32-bit userland: the same conversion, with the game's code compiled by
+Unity's IL2CPP for Unity's 64-bit IL2CPP player (2017.4.40f1's: Cuphead's own 2017.4.9f1 has no
+64-bit player) instead of shipped for Mono. Needs portmaster-unity's IL2CPP support for Unity
+2017.4 (`pmunity il2cpp`, which fetches Unity's il2cpp, the NDK's target files and the player
+into `PMUNITY_IL2CPP_HOME` on first use) and its retargeting of data to another release
+(`android-data --data-version`); about an hour of CPU.
+
+```sh
+PMUNITY_IL2CPP_HOME=/path/to/il2cpp-tools ./build64.sh "<Cuphead.app>" out64   # -> out64/device64/
+```
+
+[il2cpp.md](il2cpp.md) has what changes for Cuphead's code under IL2CPP and what is not tried yet.
+
 ## Rules for this repository
 
 - No game files and nothing from Unity: not in commits, not in releases. That includes anything
