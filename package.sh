@@ -25,7 +25,8 @@ log "helper (CupheadPort.dll)"
 "$DOTNET" build -c Release -o "$B/helper" -p:GameManaged="$GM" "$HERE/helper" >/dev/null
 log "code patcher for the handheld (linux-arm64, self-contained)"
 "$DOTNET" publish "$HERE/codepatch" -c Release -r linux-arm64 --self-contained -p:PublishSingleFile=true \
-  -p:PublishTrimmed=true -p:InvariantGlobalization=true -p:DebugType=none -o "$B/codepatch-arm64" >/dev/null
+  -p:PublishTrimmed=true -p:InvariantGlobalization=true -p:DebugType=none -p:TrimmerRemoveSymbols=true \
+  -o "$B/codepatch-arm64" >/dev/null       # (TrimmerRemoveSymbols: else ILLink stamps the trimmed DLLs with obj/'s path)
 [ -x "$PM/runtime/host/out/ua_host" ] || { log "runtime (Docker)"; "$PM/runtime/build.sh"; }
 [ -x "$PM/runtime/host/out/arm64/ua_host" ] || { log "64-bit runtime (Docker)"; ARCH=arm64 "$PM/runtime/build.sh"; }
 PYB=${PYBUNDLE:-$B/python.tar.gz}
@@ -107,6 +108,12 @@ tar -xzf "$PYB" -C "$T"
   done
 } > "$L/LICENSE.setup-python.txt"
 
+# nothing in the zip may name this machine's folders (a build path in a binary: e.g. ILLink's PDB
+# paths in the trimmed DLLs of an obj/ built before TrimmerRemoveSymbols: delete codepatch/obj)
+case $HOME in /Users/?*|/home/?*) H=$HOME ;; *) H=$HERE ;; esac
+for p in "$H" "$HERE" "$PM" "$OUT"; do
+  if LC_ALL=C grep -r -a -l -F "$p" "$Z"; then log "the files above name $p: not packaged"; exit 1; fi
+done
 rm -f "$OUT/cuphead.zip"
 (cd "$Z" && zip -qr -X "$OUT/cuphead.zip" Cuphead.sh cuphead)
 log "built $OUT/cuphead.zip ($(du -h "$OUT/cuphead.zip" | cut -f1)): unzip it into the handheld's ports folder"
