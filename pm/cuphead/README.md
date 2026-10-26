@@ -1,21 +1,21 @@
 ## Notes
 
-Requires **Cuphead for macOS from GOG** (version 1.3.4; GOG's current macOS installers hold the
-same build), with or without The Delicious Last Course. The Windows version does not work (its
-shaders are Direct3D only).
+Requires **Cuphead for macOS, version 1.3.4, from GOG or Steam**, with or without The Delicious Last
+Course. The Windows version does not work (its shaders are Direct3D only). On Steam without a Mac,
+the macOS version downloads from Steam's console (`steam://open/console`): `download_depot 268910 268912`.
 
-Copy GOG's macOS installers (`.pkg`) or the installed `Cuphead.app` into `ports/cuphead/gamedata/`
-and start Cuphead. The first launch builds the game on the handheld (one to a few hours, once; about
-10 GB free on the card during the setup, about 2.5 GB afterwards): it downloads Unity 2017.4.9f1's
-Android player from Unity (about 190 MB, Wi-Fi needed; or put
-`UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` into `gamedata/`), converts the game's
-shaders, textures and audio for the handheld, and removes the installers when it is done. If it is
-interrupted, start Cuphead again: it continues where it stopped (log: `ports/cuphead/patchlog.txt`).
+Copy GOG's macOS installers (`.pkg`) or the installed `Cuphead.app` (GOG or Steam) into
+`ports/cuphead/gamedata/` and start Cuphead. The first launch builds the game on the handheld (one
+to a few hours, once; about 10 GB free on the card during the setup, about 2.5 GB afterwards): it
+converts the game's shaders, textures and audio for the handheld and removes the copied game when it
+is done. No Wi-Fi is needed: Unity's Android player comes from the port's donors (`donor/`: small
+games of the port's own, built with Unity). If the setup is interrupted, start Cuphead again: it
+continues where it stopped (log: `ports/cuphead/patchlog.txt`).
 
 The game runs on Unity's own Android player, loaded natively on the handheld's Linux by the port's
-runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support the setup builds
-a 64-bit version instead, which takes several hours longer (it compiles the game's code with Unity's
-IL2CPP on the handheld) and needs about 12 GB free.
+runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support the setup builds a
+64-bit version instead (about 12 GB free during the setup), which runs the game's code on Unity's
+Mono for 64-bit ARM. Steam's achievements and cloud saves are not available.
 
 Saves: `ports/cuphead/data/` (64-bit build: `ports/cuphead/arm64/data/`).
 

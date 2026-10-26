@@ -1,7 +1,8 @@
 #!/bin/bash
 # build_pylibs.sh <out dir> [cache dir]: the Python packages the on-device setup needs on top of
 # PortMaster's python_3.11 runtime (CPython 3.11, aarch64): UnityPy and what it imports, unpacked
-# into <out dir> (the setup puts it on PYTHONPATH). No symbolic links (exFAT cards cannot hold them).
+# into <out dir> (the setup puts it on PYTHONPATH), and portmaster-unity's guided_astc. No symbolic
+# links (exFAT cards cannot hold them).
 #
 # Wheels come from the cache dir (default pm/cache/wheels311/), else from PyPI (pip download,
 # manylinux aarch64, cp311). PyPI has no aarch64 wheel of UnityPy 1.25.4, astc_encoder_py 0.1.12,
@@ -24,6 +25,13 @@ for w in $SRC; do
     /opt/python/cp311-cp311/bin/pip wheel --no-deps -w /tmp/w '$w' && for f in /tmp/w/*.whl; do
       case \$f in *-none-any.whl) cp \$f /out/;; *) auditwheel repair -w /out \$f;; esac; done"
 done
+
+# guided_astc (portmaster-unity's convert/native/guided_astc: the textures step's C extension, one
+# abi3 wheel for CPython 3.11+), built in the same container when GUIDED_ASTC names its folder
+if [ -n "${GUIDED_ASTC:-}" ] && ! ls "$C" | grep -q '^guided_astc-'; then
+  docker run --rm --platform linux/arm64 -v "$C":/out -v "$(cd "$GUIDED_ASTC" && pwd)":/src:ro quay.io/pypa/manylinux_2_28_aarch64 bash -c "
+    cp -r /src /tmp/g && /opt/python/cp311-cp311/bin/pip wheel --no-deps -w /tmp/w /tmp/g && auditwheel repair -w /out /tmp/w/*.whl"
+fi
 
 rm -rf "$OUT"; mkdir -p "$OUT"
 for w in "$C"/*.whl; do

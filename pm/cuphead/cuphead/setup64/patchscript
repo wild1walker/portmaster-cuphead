@@ -1,19 +1,27 @@
 #!/bin/bash
 # First-launch setup of the 64-bit build (run by launch64.sh through PortMaster's patcher): as
-# setup/patchscript, but for Unity 2017.4.40f1's 64-bit IL2CPP player, so the game's code is also
-# compiled ahead of time on the handheld (the IL2CPP step). The result goes into arm64/. Each step
-# is marked done, so an interrupted setup continues where it stopped.
+# setup/patchscript, but for Unity 2017.4.40f1's 64-bit IL2CPP player. By default the game's own
+# code runs there on Unity's Mono (the "Mono route": the port's setup64/mono64/ has the runtime for
+# aarch64, the bridge the player loads as libil2cpp.so and Mono's 4.x class libraries, all built
+# from Unity's MIT-licensed Mono sources, and the player comes from the port's donors), so nothing
+# is compiled or downloaded. CUPHEAD_64_IL2CPP=1 compiles the code ahead of time on the handheld instead (the
+# IL2CPP step: about an hour and 1.2 GB of downloads). The result goes into arm64/. Each step is
+# marked done, so an interrupted setup continues where it stopped.
 GD="$GAMEDIR/gamedata"; S="$GAMEDIR/setup"; S64="$GAMEDIR/setup64"; W="$GD/.setup64"
 D="$W/Cuphead_Data"; A="$GAMEDIR/arm64"; P="$W/player"; MP="$W/managed"; H="$W/il2cpp-home"; IL="$W/il2cpp"
 UNITY=2017.4.40f1
 UNITY_URL=https://download.unity3d.com/download_unity/6e14067f8a9a/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe
 UNITY_EXE=$(basename "$UNITY_URL")
 PLAYER_LIBS="$P/Variations/il2cpp/Release/Libs/arm64-v8a"
+M64="$S64/mono64"
+ROUTE=mono; [ "${CUPHEAD_64_IL2CPP:-0}" = 1 ] || [ ! -f "$M64/libmonobdwgc-2.0.so" ] && ROUTE=il2cpp
 
 exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1
 fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
 step() { echo "== $(date +%H:%M:%S) $*"; }
 mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
+# the route stays the one an interrupted setup started with
+[ -f "$W/.route" ] && ROUTE=$(cat "$W/.route"); echo "$ROUTE" > "$W/.route"
 # Python's downloads (Unity's servers) need the system's CA certificates, and OpenSSL 1.1, which
 # PortMaster's Python links and most firmwares no longer have (setup64/lib: Debian 11's libssl1.1)
 for f in /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt /etc/ssl/cert.pem; do
@@ -42,24 +50,36 @@ if [ ! -f "$W/.step_game" ]; then
       pm macpkg "$W/pkgroot" $PKGS || fail "Could not unpack the installers (see patchlog.txt)."
       APP=$(find "$W/pkgroot" -maxdepth 4 -type d -name 'Cuphead.app' | head -1)
     fi
-    [ -n "$APP" ] || fail "Put Cuphead.app (GOG macOS) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata."
+    [ -n "$APP" ] || fail "Put Cuphead.app (macOS, from GOG or Steam) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata."
     grep -aqs "2017.4.9f1" "$APP/Contents/Resources/Data/globalgamemanagers" \
-      || fail "This Cuphead version is not supported (the port needs GOG's macOS 1.3.4)."
+      || fail "This Cuphead version is not supported (the port needs the macOS build 1.3.4, GOG's or Steam's)."
     cp "$APP/Contents/Resources/"goggame-*.info "$W/" 2>/dev/null   # (the DLC check reads them)
     mv "$APP/Contents/Resources/Data" "$D" || fail "Could not move the game's data."
+    # (Steam's DLC check, which the code patch replaces: the DLC's bundles are in the data)
+    [ -f "$D/StreamingAssets/AssetBundles/atlas_map_common_dlc" ] && touch "$W/.dlc_files"
     rm -rf "$W/pkgroot" "$APP"
   fi
   touch "$W/.step_game"
 fi
 
-# 2. Unity's 64-bit IL2CPP player 2017.4.40f1 (about 7 MB read from Unity's installer online, or
-# from the installer, if put in gamedata/)
+# 2. Unity's 64-bit IL2CPP player 2017.4.40f1: on the Mono route from the port's donors (small games
+# of its own built with Unity 2017.4.40f1: the IL2CPP one carries the player, the Mono one the
+# UnityEngine assemblies; no download), on the IL2CPP route from Unity's installer online (about
+# 7 MB read), or from the installer, if put in gamedata/
+DONOR="$GAMEDIR/donor"
+[ $ROUTE = mono ] && ! grep -qs donors "$P/player.json" && rm -f "$W/.step_player"   # (an older setup's)
 if [ ! -f "$W/.step_player" ]; then
-  I="$GD/$UNITY_EXE"; [ -f "$I" ] || I="$UNITY_URL"
   step "Unity's 64-bit Android player $UNITY"
   rm -rf "$P"
-  pm player fetch "$UNITY" "$P" --backend il2cpp --abi arm64-v8a --installer "$I" \
-    || fail "Could not get Unity's player: is Wi-Fi on? (Or put $UNITY_EXE in ports/cuphead/gamedata.)"
+  if [ $ROUTE = mono ]; then
+    pm player donor "$UNITY" "$P" --backend il2cpp --abi arm64-v8a --managed \
+      --apk "$DONOR/donor-$UNITY-il2cpp-arm64.apk" --apk "$DONOR/donor-$UNITY-mono-armv7.apk" \
+      || fail "Could not unpack Unity's player from the donors (see patchlog.txt)."
+  else
+    I="$GD/$UNITY_EXE"; [ -f "$I" ] || I="$UNITY_URL"
+    pm player fetch "$UNITY" "$P" --backend il2cpp --abi arm64-v8a --installer "$I" \
+      || fail "Could not get Unity's player: is Wi-Fi on? (Or put $UNITY_EXE in ports/cuphead/gamedata.)"
+  fi
   echo "70e113ef3db212451f69881194381cdbe742720e52125216b7b46bc5bd2b6e22  $PLAYER_LIBS/libmain.so
 79eddea99a16ceeac6d590df318baba769a1d00aaa10f7858d45e82bd28096db  $PLAYER_LIBS/libunity.so" | sha256sum -c \
     || fail "Unity's player is not the one this port was made with."
@@ -81,15 +101,15 @@ if [ ! -f "$W/.step_code" ]; then
   step "patching the game's code"
   chmod +x "$S/codepatch"
   rm -rf "$MP.tmp"
-  "$S/codepatch" --target=android "$D/Managed" "$MP.tmp" && cp "$S/CupheadPort.dll" "$MP.tmp/" \
+  "$S/codepatch" --target=android $([ -f "$W/.dlc_files" ] && echo --steam-dlc) "$D/Managed" "$MP.tmp" && cp "$S/CupheadPort.dll" "$MP.tmp/" \
     && rm -rf "$MP" && mv "$MP.tmp" "$MP" || fail "Patching the game's code failed (see patchlog.txt)."
   touch "$W/.step_code"
 fi
 
-# 5. IL2CPP: the code compiled for the 64-bit player. Its tools (Unity's il2cpp, parts of the
-# Android NDK, Debian's arm64 compilers) are downloaded into il2cpp-home and checked against
-# pinned checksums
-if [ ! -f "$W/.step_il2cpp" ]; then
+# 5. IL2CPP (CUPHEAD_64_IL2CPP=1; the Mono route skips it): the code compiled for the 64-bit
+# player. Its tools (Unity's il2cpp, parts of the Android NDK, Debian's arm64 compilers) are
+# downloaded into il2cpp-home and checked against pinned checksums
+if [ $ROUTE = il2cpp ] && [ ! -f "$W/.step_il2cpp" ]; then
   if [ ! -f "$W/.step_il2cpp_tools" ]; then
     step "downloading the tools that compile the game's code"
     pm il2cpp fetch "$UNITY" --on-device --abi arm64-v8a --net 2subset --pkg "$P" --home "$H" \
@@ -104,12 +124,21 @@ if [ ! -f "$W/.step_il2cpp" ]; then
   touch "$W/.step_il2cpp"
 fi
 
-# 6. the APK the player reads, with IL2CPP's metadata (the helper's SDL2 calls go through ua_host's
-# plugin map)
+# 6. the APK the player reads: on the Mono route with the game's assemblies (the patched
+# Assembly-CSharp, the helper) and Mono's 4.x class libraries instead of the game's 2.0 ones, with
+# Mono's Linux config; on the IL2CPP route with IL2CPP's metadata (the helper's SDL2 calls go
+# through ua_host's plugin map)
 if [ ! -f "$W/.step_package" ]; then
   step "packing the game"
+  if [ $ROUTE = mono ]; then
+    CL=(); for f in "$M64"/classlibs/*.dll; do CL+=(--managed-file "$f"); done
+    RT=(--mono64 --managed-file "$MP/Assembly-CSharp.dll" --managed-file "$MP/CupheadPort.dll" "${CL[@]}"
+        --mono-etc "$M64/etc" --dllmap SDL2=libSDL2-2.0.so.0)
+  else
+    RT=(--il2cpp "$IL")
+  fi
   pm android-data --src "$D" --pkg "$P" --out "$W/android" --name Cuphead --package com.cupheadport.game \
-    --root-file animclips.txt --il2cpp "$IL" --plugin-map "$S64/plugins-il2cpp.json" \
+    --root-file animclips.txt --drop-missing-assembly GalaxyCSharp.dll "${RT[@]}" --plugin-map "$S64/plugins-il2cpp.json" \
     --consume-src --verify-bundles 2 --pack all --no-video-shader \
     || fail "Packing the game failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_package"
@@ -119,7 +148,10 @@ fi
 # and the player's copy of the game are removed
 step "installing"
 mkdir -p "$A/lib"
-for f in "$PLAYER_LIBS/libmain.so" "$PLAYER_LIBS/libunity.so" "$IL/lib/arm64-v8a/libil2cpp.so"; do
+LIBS=("$PLAYER_LIBS/libmain.so" "$PLAYER_LIBS/libunity.so")
+if [ $ROUTE = mono ]; then LIBS+=("$M64/libil2cpp.so" "$M64/libmonobdwgc-2.0.so" "$M64/libMonoPosixHelper.so")
+else LIBS+=("$IL/lib/arm64-v8a/libil2cpp.so"); fi
+for f in "${LIBS[@]}"; do
   cp "$f" "$A/lib/" || fail "Could not install Unity's player."
 done
 [ -d "$W/android/zip/assets" ] && rm -rf "$A/assets"

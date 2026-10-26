@@ -58,10 +58,31 @@ sound (PCM piped into `pw-cat`/`pacat` when a sound server holds the card), runs
 ## The 64-bit build
 
 Unity's 64-bit ARM Android players exist only for IL2CPP, and Unity 2017.4 has them from
-2017.4.16f1; Cuphead is 2017.4.9f1. A firmware without the 32-bit loader therefore runs Cuphead's
-code compiled ahead of time by the IL2CPP of the line's last release, 2017.4.40f1, on that release's
-IL2CPP player (a line keeps its serialized layouts), with the runtime's aarch64 build (`ua_host64`,
-portmaster-unity's `runtime/host/out/arm64/ua_host`; portmaster-unity is not public yet).
+2017.4.16f1; Cuphead is 2017.4.9f1. A firmware without the 32-bit loader therefore runs Cuphead on
+the IL2CPP player of the line's last release, 2017.4.40f1 (a line keeps its serialized layouts),
+with the runtime's aarch64 build (`ua_host64`, portmaster-unity's `runtime/host/out/arm64/ua_host`;
+portmaster-unity is not public yet). The game's code gets there in one of two ways:
+
+- **The Mono route** (the default): Cuphead's own assemblies, JIT-compiled at run time by Unity's
+  Mono of the 2017.4 line (MonoBleedingEdge, Mono 5.0.1, built for aarch64 Linux), behind a bridge
+  the player loads as its `libil2cpp.so` (portmaster-unity's `docs/mono-arm64.md`). Cuphead is a
+  .NET 3.5 game, whose Mono (2.6) has no 64-bit ARM code generator, so its assemblies run on Mono's
+  4.x class libraries (the `unityjit` profile) instead of its own 2.0 ones. The runtime, the bridge
+  and those class libraries are built from Unity's MIT-licensed Mono sources and ship in the zip
+  (`setup64/mono64/`, about 6 MB of the zip, 15 MB unpacked): nothing is compiled on the handheld and
+  nothing but Unity's player is downloaded.
+- **IL2CPP** (`CUPHEAD_64_IL2CPP=1` at the first launch): the code compiled ahead of time by
+  2017.4.40f1's IL2CPP on the handheld (an hour, 1.2 GB of downloads), or by `build64.sh` on a PC.
+
+What differs on the Mono route, measured in the arm64 rig against the IL2CPP build (which runs the
+game's 2.0 class libraries) and the 32-bit build's logs: title, slot select, bosses, a run-and-gun
+level and the win screen without a managed exception; deterministic replays (`CUPHEAD_TEST_DETERMINISTIC`)
+of Veggies with the IL2CPP build's frames (identical, or 74 - 105 of 345,600 pixels off by 1/255:
+float rounding); saves of the 32-bit build load, and the
+saves it writes are the same bytes except in one place: Dialoguer's global variables (XML from
+`XmlSerializer`, a string in the save) name their two XML namespaces in the other order
+(`xmlns:xsd` before `xmlns:xsi`: Mono 5's `XmlSerializer` is .NET's reference source, which keeps
+them in a hash table, and Mono's string hash orders them so), which both builds read the same way.
 
 **Which build** (`Cuphead.sh`, decided once, before anything else is written to the log):
 
@@ -92,8 +113,9 @@ scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2c
 
 1. **The game** as in the 32-bit setup (`Cuphead.app` or the GOG installers; 12 GB free for the
    installers, which stay until the end, plus the IL2CPP build).
-2. **Unity's player:** `pmunity player fetch 2017.4.40f1 --backend il2cpp --abi arm64-v8a` (about
-   7 MB read from Unity's installer with range requests; the whole installer as a fallback, or
+2. **Unity's player:** `pmunity player fetch 2017.4.40f1 --backend il2cpp --abi arm64-v8a`, with
+   `--managed` on the Mono route (its UnityEngine assemblies) (about 7 MB read from Unity's
+   installer with range requests; the whole installer as a fallback, or
    `UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe` in `gamedata/`); `libmain.so` and
    `libunity.so` checked against their SHA-256.
 3. **Conversion:** exactly the 32-bit setup's (`convert/cuphead.json`, `animclips.py`, the texture
@@ -102,7 +124,7 @@ scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2c
    `Managed/` stays as it is) and `CupheadPort.dll`, kept in the work folder (`managed/`), as the
    32-bit setup applies them; the patches are IL patches of the assembly IL2CPP compiles, so they
    come first.
-5. **IL2CPP on the handheld:** `pmunity il2cpp fetch 2017.4.40f1 --on-device --abi arm64-v8a --net 2
+5. **IL2CPP on the handheld** (`CUPHEAD_64_IL2CPP=1` only; the Mono route skips it): `pmunity il2cpp fetch 2017.4.40f1 --on-device --abi arm64-v8a --net 2
    --pkg <player> --home <dir>` (the toolchain), then `pmunity il2cpp <data> <out> --on-device
    --abi arm64-v8a --unity 2017.4.40f1 --pkg <player> --home <dir> --managed-file
    <managed>/Assembly-CSharp.dll --managed-file <managed>/CupheadPort.dll [--link-xml
@@ -113,15 +135,20 @@ scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2c
    IL2CPP work ([il2cpp.md](il2cpp.md)). A converter whose `il2cpp --help` lacks `--on-device` or
    `--managed-file` stops the setup here with a message pointing to `build64.sh`. Free space
    checked before: 3 GB (an estimate until measured on a handheld).
-6. **Packing:** `pmunity android-data --il2cpp <out>` (same name, package and options as the 32-bit
-   packing, without the assembly patch, the helper, Mono's config and dllmap: IL2CPP's output
-   holds the code, and IL2CPP reads no dllmap, so the helper's `DllImport("SDL2")` goes through
-   ua_host's plugin map, `setup64/plugins-il2cpp.json`). android-data rewrites the 2017.4.9f1 data
-   for the 2017.4.40f1 player.
-7. **Installing** into `arm64/`, `.cuphead_ready64`, then the tools and the installers are removed.
+6. **Packing:** on the Mono route `pmunity android-data --mono64` with the patched
+   `Assembly-CSharp.dll`, `CupheadPort.dll` and `setup64/mono64/classlibs/*.dll` as
+   `--managed-file`s (the class libraries replace the game's 2.0 ones of the same names), Mono's
+   Linux config (`--mono-etc setup64/mono64/etc`) and the 32-bit packing's `--dllmap
+   SDL2=libSDL2-2.0.so.0`; with IL2CPP `pmunity android-data --il2cpp <out>` (without the helper,
+   Mono's config and dllmap: IL2CPP's output holds the code, and IL2CPP reads no dllmap). Both with
+   ua_host's plugin map (`setup64/plugins-il2cpp.json`) and the 32-bit packing's name, package and
+   options. android-data rewrites the 2017.4.9f1 data for the 2017.4.40f1 player.
+7. **Installing** into `arm64/` (`lib/`: the player's `libmain.so` and `libunity.so`, and on the
+   Mono route `setup64/mono64/`'s `libil2cpp.so` (the bridge), `libmonobdwgc-2.0.so` and
+   `libMonoPosixHelper.so`), `.cuphead_ready64`, then the tools and the installers are removed.
 
-At run time `launch64.sh` also sets `CUPHEAD_CODEWARM=0`: the helper's code warm-up only helps
-Mono's JIT.
+At run time `launch64.sh` sets `CUPHEAD_CODEWARM=0` for an IL2CPP install: the helper's code
+warm-up only helps Mono's JIT (on the Mono route it stays on, as in the 32-bit build).
 
 `build64.sh` makes the same build on a PC or Mac (IL2CPP in Docker there), for handhelds too weak
 to compile the code ([building.md](building.md)); its folder is what this setup leaves in
