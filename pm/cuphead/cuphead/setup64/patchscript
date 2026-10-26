@@ -20,7 +20,8 @@ exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1
 fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
 step() { echo "== $(date +%H:%M:%S) $*"; }
 mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
-[ -n "$RESOLUTION" ] && echo "$RESOLUTION" > "$GAMEDIR/resolution.txt"   # (the launcher reads it)
+[ -n "$ASPECT" ] && echo "$ASPECT" > "$GAMEDIR/aspect.txt"                # (the launcher reads them)
+[ -n "$RESOLUTION" ] && echo "$RESOLUTION" > "$GAMEDIR/resolution.txt"
 # the route stays the one an interrupted setup started with
 [ -f "$W/.route" ] && ROUTE=$(cat "$W/.route"); echo "$ROUTE" > "$W/.route"
 # Python's downloads (Unity's servers) need the system's CA certificates, and OpenSSL 1.1, which

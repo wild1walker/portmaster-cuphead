@@ -14,8 +14,10 @@ if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
   exit 1
 fi
 
-# the resolution the setup asked for (resolution.txt: "device", or a share of the panel's size,
-# which the display engine scales up to the whole panel)
+# the picture shape the setup asked for (aspect.txt: "fill", or "16:9" for the game's letterbox),
+# and an optional smaller render size (resolution.txt: a share of the panel's, e.g. 0.75, which the
+# display engine scales up to the whole panel)
+A=$(cat "$GAMEDIR/aspect.txt" 2>/dev/null); [ "$A" = 16:9 ] && export CUPHEAD_ASPECT=16:9
 R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
 
 # the helper's code warm-up is for Mono's JIT (the Mono route: on, as in the 32-bit build); IL2CPP's

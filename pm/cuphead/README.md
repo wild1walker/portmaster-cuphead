@@ -17,8 +17,12 @@ runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support
 64-bit version instead (about 12 GB free during the setup), which runs the game's code on Unity's
 Mono for 64-bit ARM. Steam's achievements and cloud saves are not available.
 
-The setup asks for the texture quality and the resolution the game renders at (default: the
-device's; `ports/cuphead/resolution.txt` changes it later: `device`, or a share such as `0.75`).
+The setup asks for the texture quality, the picture shape and the resolution. Shape: fill the
+screen (default; on 3:2 and 16:10 screens the sides are cropped a little, 4:3 screens keep the
+bars) or the game's 16:9 with bars; `ports/cuphead/aspect.txt` changes it later (`fill` or `16:9`).
+Resolution: the device's (default), or 5/6, 3/4 or 1/2 of it, which the display hardware scales to
+the full screen at no cost (softer but faster); `ports/cuphead/resolution.txt` changes it later
+(`device`, or a share such as `0.75`).
 
 Saves: `ports/cuphead/data/` (64-bit build: `ports/cuphead/arm64/data/`).
 

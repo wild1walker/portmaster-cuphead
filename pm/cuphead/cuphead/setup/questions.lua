@@ -10,6 +10,14 @@ return {
     },
   },
   {
+    id = "ASPECT",
+    question = "Picture shape? Fill fits the game to the screen (on 3:2 and 16:10 screens the sides are cropped a little; 4:3 screens keep the bars). 16:9 shows the whole picture with bars above and below. (Change it later in ports/cuphead/aspect.txt.)",
+    options = {
+      { "fill", "Fill the screen (recommended)" },
+      { "16:9", "16:9 with bars" },
+    },
+  },
+  {
     id = "RESOLUTION",
     question = "Resolution the game renders at? The screen shows it full size either way; lower is softer but faster. (Change it later in ports/cuphead/resolution.txt.)",
     options = {
