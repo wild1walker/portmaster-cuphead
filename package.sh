@@ -1,15 +1,15 @@
 #!/bin/bash
-# package.sh [out dir]: the PortMaster port (cuphead.zip) whose first launch builds the game on the
-# handheld from the player's own copy (pm/cuphead/setup/patchscript; on a 64-bit-only system
-# pm/cuphead/setup64/patchscript, the 64-bit build). No game files and nothing from Unity go into it.
+# package.sh [out dir]: the PortMaster port (cuphead.zip) from pm/cuphead/ (laid out as a
+# PortMaster-New pull request), whose first launch builds the game on the handheld from the
+# player's own copy. No game files and nothing from Unity go into it.
 #
 # Needs:
 #   PMUNITY        a portmaster-unity checkout (default ../portmaster-unity), its runtime built (32-bit
 #                  and 64-bit: runtime/host/out/ua_host, runtime/host/out/arm64/ua_host) or Docker
 #   GAME_MANAGED   Cuphead's Managed folder (e.g. Cuphead.app/Contents/Resources/Data/Managed): the
 #                  helper compiles against the game's assemblies (none of them is copied)
-#   PYBUNDLE       the setup's Python (pm/build_pybundle.sh <file> builds it; default: built into the
-#                  out dir from pm/cache)
+#   PYLIBS         the Python packages the setup adds to PortMaster's python_3.11 runtime
+#                  (pm/build_pylibs.sh <dir> builds them; default: built into the out dir from pm/cache)
 #   DOTNET         the .NET 8 SDK's dotnet (default: on PATH, else ~/.dotnet/dotnet)
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -29,52 +29,62 @@ log "code patcher for the handheld (linux-arm64, self-contained)"
   -o "$B/codepatch-arm64" >/dev/null       # (TrimmerRemoveSymbols: else ILLink stamps the trimmed DLLs with obj/'s path)
 [ -x "$PM/runtime/host/out/ua_host" ] || { log "runtime (Docker)"; "$PM/runtime/build.sh"; }
 [ -x "$PM/runtime/host/out/arm64/ua_host" ] || { log "64-bit runtime (Docker)"; ARCH=arm64 "$PM/runtime/build.sh"; }
-PYB=${PYBUNDLE:-$B/python.tar.gz}
-[ -f "$PYB" ] || { log "setup Python"; "$HERE/pm/build_pybundle.sh" "$PYB"; }
+# Cuphead does not use Steamworks: ua_host without the runtime's Steamworks stand-ins (STEAMSTUB=0)
+for a in armhf arm64; do
+  h=$PM/runtime/host/out/ua_host; [ $a = arm64 ] && h=$PM/runtime/host/out/arm64/ua_host
+  if LC_ALL=C grep -aqi steam "$h"; then log "ua_host ($a) without Steamworks stand-ins (Docker)"; STEAMSTUB=0 ARCH=$a "$PM/runtime/host/build.sh" >/dev/null; fi
+  if LC_ALL=C grep -aqi steam "$h"; then log "$h still has Steamworks stand-ins"; exit 1; fi
+done
+PYL=${PYLIBS:-$B/pylibs}
+[ -d "$PYL/UnityPy" ] || { log "setup's Python packages"; "$HERE/pm/build_pylibs.sh" "$PYL"; }
+# OpenSSL 1.1 for the 64-bit setup's downloads (PortMaster's Python links it; most firmwares have 3)
+DEB="$HERE/pm/cache/libssl1.1_1.1.1w-0+deb11u1_arm64.deb"
+[ -f "$DEB" ] || curl -fL -o "$DEB" "https://deb.debian.org/debian/pool/main/o/openssl/$(basename "$DEB")"
+[ "$(shasum -a 256 "$DEB" | cut -d' ' -f1)" = fe7a7d313c87e46e62e614a07137e4a476a79fc9e5aab7b23e8235211280fee3 ] \
+  || { echo "$DEB: checksum mismatch" >&2; exit 1; }
+T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+(cd "$T" && ar x "$DEB" data.tar.xz && tar -xJf data.tar.xz ./usr/lib/aarch64-linux-gnu/libssl.so.1.1 \
+   ./usr/lib/aarch64-linux-gnu/libcrypto.so.1.1 ./usr/share/doc/libssl1.1/copyright)
 
 log "assembling"
 Z="$OUT/zip"; rm -rf "$Z"; mkdir -p "$Z"
-cp "$HERE/pm/Cuphead.sh" "$Z/"
-P="$Z/cuphead"; mkdir -p "$P/setup" "$P/licenses" "$P/gamedata"
-cp "$HERE/pm/cuphead/README.md" "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/port.json" "$HERE/pm/cuphead/setup.txt" "$P/"
-cp "$HERE/pm/cuphead/gamedata/PUT_GAME_FILES_HERE.txt" "$P/gamedata/"
+R="$HERE/pm/cuphead"                      # the port as a PortMaster-New pull request lays it out
+cp "$R/Cuphead.sh" "$Z/"
+P="$Z/cuphead"; cp -R "$R/cuphead" "$P"
+# what PortMaster's release build adds to the port folder
+cp "$R/port.json" "$R/gameinfo.xml" "$R/screenshot.jpg" "$R/cover.jpg" "$P/"
+cp "$R/README.md" "$P/cuphead.md"
 cp "$PM/runtime/host/out/ua_host" "$P/"
+cp "$PM/runtime/host/out/arm64/ua_host" "$P/ua_host64"
 S="$P/setup"
-cp "$HERE/pm/cuphead/setup/patchscript" "$HERE/pm/cuphead/setup/questions.lua" "$PYB" "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" \
-   "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
-[ "$(basename "$PYB")" = python.tar.gz ] || mv "$S/$(basename "$PYB")" "$S/python.tar.gz"
+cp "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
+cp -R "$PYL" "$S/pylibs"
 (cd "$PM/convert" && find pmunity \( -name '*.py' -o -name '*.shader' \) -not -path '*/__pycache__/*') | while read -r f; do
   mkdir -p "$S/$(dirname "$f")"; cp "$PM/convert/$f" "$S/$f"
 done
-chmod +x "$Z/Cuphead.sh" "$P/ua_host" "$S/patchscript" "$S/codepatch"
-# the 64-bit build (launch64.sh): its runtime, and its setup, which runs the tools in setup/ too
-cp "$HERE/pm/cuphead/launch64.sh" "$P/"
-cp "$PM/runtime/host/out/arm64/ua_host" "$P/ua_host64"
-S64="$P/setup64"; mkdir -p "$S64"
-cp "$HERE/pm/cuphead/setup64/patchscript" "$HERE/pm/cuphead/setup/questions.lua" "$S64/"
+S64="$P/setup64"
 cp -R "$PM/tools/il2cpp" "$S64/il2cpp"                    # (the converter's IL2CPP step's scripts)
-for f in il2cpp/link.xml convert/plugins-il2cpp.json; do    # Cuphead's IL2CPP files, once in the repository
-  if [ -f "$HERE/$f" ]; then cp "$HERE/$f" "$S64/"; fi
-done
-chmod +x "$P/ua_host64" "$S64/patchscript"
+cp "$HERE/il2cpp/link.xml" "$HERE/convert/plugins-il2cpp.json" "$S64/"
+mkdir -p "$S64/lib"; cp "$T"/usr/lib/aarch64-linux-gnu/lib*.so.1.1 "$S64/lib/"
+find "$Z" -name '*.sh' -exec chmod 644 {} +            # (the launcher sets the exec bits it needs)
 
-# licences: ours, and every third-party part the zip carries
-L="$P/licenses"
+# licences: one LICENSE.<component>.txt per component the zip carries
+L="$P/licenses"; mkdir -p "$L"
 cp "$HERE/LICENSE" "$L/LICENSE.portmaster-cuphead.txt"
-cp "$PM/LICENSE" "$L/LICENSE.portmaster-unity.txt"
-cp "$PM/THIRD_PARTY.md" "$L/THIRD_PARTY.portmaster-unity.md"
-cp "$PM/runtime/thirdparty/libhybris/LICENSE.Apache2" "$L/LICENSE.libhybris-Apache-2.0.txt"   # in ua_host
-ML="$PM/runtime/media/out/licenses"                                                         # in ua_host (video decoders)
-ls "$ML"/*.copyright >/dev/null 2>&1 || { echo "no decoder licences in $ML: build portmaster-unity's runtime first" >&2; exit 1; }
-for f in "$ML"/*.copyright; do cp "$f" "$L/LICENSE.$(basename "$f" .copyright).txt"; done
-ML64="$PM/runtime/media/out/arm64/licenses"                                                 # in ua_host64
-ls "$ML64"/* >/dev/null 2>&1 || { echo "no decoder licences in $ML64: build portmaster-unity's 64-bit runtime first" >&2; exit 1; }
-for f in "$ML64"/*; do n=$(basename "$f"); cp "$f" "$L/LICENSE.${n%.*}.arm64.txt"; done
+{ cat "$PM/LICENSE"; printf '\n\n'; cat "$PM/THIRD_PARTY.md"; } > "$L/LICENSE.portmaster-unity.txt"
+cp "$PM/runtime/thirdparty/libhybris/LICENSE.Apache2" "$L/LICENSE.libhybris.txt"            # in ua_host
+for d in "$PM/runtime/media/out/licenses" "$PM/runtime/media/out/arm64/licenses"; do         # in ua_host, ua_host64 (video decoders)
+  ls "$d"/* >/dev/null 2>&1 || { echo "no decoder licences in $d: build portmaster-unity's runtime first" >&2; exit 1; }
+done
+for f in "$PM"/runtime/media/out/licenses/*; do
+  n=$(basename "$f"); n=${n%.*}; g=$(ls "$PM"/runtime/media/out/arm64/licenses/"$n".* 2>/dev/null | head -1)
+  { echo "$n (armhf, in ua_host)"; echo; cat "$f"
+    if [ -n "$g" ] && ! cmp -s "$f" "$g"; then printf '\n\n%s (arm64, in ua_host64)\n\n' "$n"; cat "$g"; fi; } > "$L/LICENSE.$n.txt"
+done
 NUGET=${NUGET_PACKAGES:-$HOME/.nuget/packages}
 RT=$(ls -d "$NUGET"/microsoft.netcore.app.runtime.linux-arm64/8.* | tail -1)
-cp "$RT/LICENSE.TXT" "$L/LICENSE.dotnet-runtime.txt"                                        # in codepatch
-cp "$RT/THIRD-PARTY-NOTICES.TXT" "$L/THIRD-PARTY-NOTICES.dotnet-runtime.txt"
-cat > "$L/LICENSE.mono.cecil.txt" <<'TXT'
+{ cat "$RT/LICENSE.TXT"; printf '\n\n'; cat "$RT/THIRD-PARTY-NOTICES.TXT"; } > "$L/LICENSE.dotnet-runtime.txt"   # in codepatch
+cat > "$L/LICENSE.mono-cecil.txt" <<'TXT'
 Mono.Cecil 0.11.6 (in codepatch)
 
 Copyright (c) 2008 - 2015 Jb Evain
@@ -95,23 +105,17 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 TXT
-T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
-tar -xzf "$PYB" -C "$T"
-{
-  echo "The setup's Python (removed from the handheld when the setup is done): python-build-standalone's"
-  echo "CPython 3.12 and these packages. Their licences follow."
-  for f in "$T"/python/lib/python3.12/LICENSE.txt "$T"/python/lib/python3.12/site-packages/*.dist-info/LICENSE* \
-           "$T"/python/lib/python3.12/site-packages/*.dist-info/licenses/*; do
-    [ -f "$f" ] || continue
-    rel=${f#"$T"/python/lib/python3.12/}
-    printf '\n\n==== %s ====\n\n' "$rel"; cat "$f"
-  done
-} > "$L/LICENSE.setup-python.txt"
+for d in "$PYL"/*.dist-info; do                            # the setup's Python packages
+  n=$(sed -n 's/^Name: //p' "$d/METADATA" | head -1 | tr 'A-Z_' 'a-z-')
+  for f in "$d"/LICEN[CS]E* "$d"/licenses/* "$d"/COPYING*; do [ -f "$f" ] && cat "$f" && printf '\n'; done > "$L/LICENSE.$n.txt"
+  [ -s "$L/LICENSE.$n.txt" ] || { echo "$d: no licence file" >&2; exit 1; }
+done
+cp "$T/usr/share/doc/libssl1.1/copyright" "$L/LICENSE.openssl.txt"
 
 # nothing in the zip may name this machine's folders (a build path in a binary: e.g. ILLink's PDB
 # paths in the trimmed DLLs of an obj/ built before TrimmerRemoveSymbols: delete codepatch/obj)
 case $HOME in /Users/?*|/home/?*) H=$HOME ;; *) H=$HERE ;; esac
-for p in "$H" "$HERE" "$PM" "$OUT"; do
+for p in "$H" "$HERE" "$PM" "$OUT" /Users/ /Volumes/; do
   if LC_ALL=C grep -r -a -l -F "$p" "$Z"; then log "the files above name $p: not packaged"; exit 1; fi
 done
 rm -f "$OUT/cuphead.zip"

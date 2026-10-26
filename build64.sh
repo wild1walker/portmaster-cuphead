@@ -126,13 +126,12 @@ cp "$HB/ua_host" "$D/"
 for f in libmain.so libunity.so; do cp "$IPKG/Variations/il2cpp/Release/Libs/$ABI/$f" "$D/lib/"; done
 cp "$SO" "$D/lib/"
 copy_tree "$OUT/android/zip" "$D"
-cp "$HERE/pm/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/README.md" "$HERE/pm/cuphead/port.json" \
-   "$HERE/pm/cuphead/setup.txt" "$D/"
+cp "$HERE/pm/cuphead/cuphead/cuphead_hotkey.gptk" "$HERE/pm/cuphead/port.json" "$D/"
+cp "$HERE/pm/cuphead/README.md" "$D/cuphead.md"
 L="$D/licenses"; mkdir -p "$L"
 cp "$HERE/LICENSE" "$L/LICENSE.portmaster-cuphead.txt"
-cp "$PM/LICENSE" "$L/LICENSE.portmaster-unity.txt"
-cp "$PM/THIRD_PARTY.md" "$L/THIRD_PARTY.portmaster-unity.md"
-cp "$PM/runtime/thirdparty/libhybris/LICENSE.Apache2" "$L/LICENSE.libhybris-Apache-2.0.txt"   # in ua_host
+{ cat "$PM/LICENSE"; printf '\n\n'; cat "$PM/THIRD_PARTY.md"; } > "$L/LICENSE.portmaster-unity.txt"
+cp "$PM/runtime/thirdparty/libhybris/LICENSE.Apache2" "$L/LICENSE.libhybris.txt"            # in ua_host
 for f in "$PM/runtime/media/out/arm64/licenses"/*; do                                     # in ua_host (video decoders)
   if [ -f "$f" ]; then n=$(basename "$f"); cp "$f" "$L/LICENSE.${n%.*}.txt"; fi
 done

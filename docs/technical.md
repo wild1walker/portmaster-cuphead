@@ -14,18 +14,20 @@ The player's guide is the [README](../README.md); building is in [building.md](b
 ## The release and the setup
 
 The release zip (`cuphead.zip`, made by `package.sh`) holds `Cuphead.sh` (the launcher) and
-`cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, the setup in `setup/` and every
-licence in `licenses/`; for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.sh`
+`cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, `gameinfo.xml`, the screenshot
+and cover, the setup in `setup/` and every licence in `licenses/` (one `LICENSE.<component>.txt`
+each); for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.sh`
 and `setup64/`. No game files and nothing from Unity.
 
 On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's patcher
 (`PATCHER_FILE`, `PATCHER_QUESTIONS`; a failure is a `PATCH_FAIL_MSG:` line the patcher shows):
 
-1. **Python:** unpacks the setup's Python (`python.tar.gz`: python-build-standalone's CPython 3.12
-   with UnityPy, lz4, astc-encoder and Pillow, aarch64).
+1. **Python:** PortMaster's `python_3.11` runtime (`attr.runtime` in `port.json`; `Cuphead.sh`
+   mounts it at `$HOME/python_3.11` for the setup) with the packages it lacks in `setup/pylibs/`
+   (UnityPy, lz4, astc-encoder, Pillow and their helpers, aarch64, built by `pm/build_pylibs.sh`).
 2. **The game:** finds `Cuphead.app` in `gamedata/` (or one folder deeper), or unpacks GOG's macOS
    installers with `pmunity macpkg` (largest first: the game, then the DLC; about 9 GB free
-   needed); refuses the Windows installers and any build that is not Unity 2017.4.9f1; keeps the
+   needed); refuses any build that is not Unity 2017.4.9f1; keeps the
    GOG `.info` files (the DLC check reads them) and Mono's `etc` folder.
 3. **Unity's player:** `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` from `gamedata/`, or
    downloaded from Unity (`download.unity3d.com`, about 190 MB) and checked against its SHA-256;
@@ -33,7 +35,7 @@ On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's p
    `unity default resources` are extracted with PortMaster's 7-Zip.
 4. **Conversion:** `pmunity convert` with `convert/cuphead.json` and the `animclips.py` plugin:
    GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, else
-   `setup.txt`, else medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
+   medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
    settings and audio, and the helper's animation table. The shader settings keep the output the
    handheld was tested with: `glcore4x` off, and `compute` off (Cuphead's one compute shader, the
    post-processing stack's eye-adaptation histogram, keeps no OpenGL ES kernel, so the player
@@ -50,8 +52,7 @@ stopped. Log: `ports/cuphead/patchlog.txt`.
 
 At every launch `Cuphead.sh` presents the built-in pad to the game as an Android gamepad named
 `Xbox Wireless Controller` (`UA_PAD_NAME`; Rewired knows Android pads by name), uses ALSA for
-sound (PCM piped into `pw-cat`/`pacat` when a sound server holds the card), writes a line of frame
-statistics every 10 s to `log.txt` (`UA_FPS`), runs gptokeyb only for the exit hotkey
+sound (PCM piped into `pw-cat`/`pacat` when a sound server holds the card), runs gptokeyb only for the exit hotkey
 (Select+Start) and puts `/lib32` and `/usr/lib32` first in the library path (Knulli).
 
 ## The 64-bit build
@@ -67,7 +68,7 @@ portmaster-unity's `runtime/host/out/arm64/ua_host`; portmaster-unity is not pub
 | system | build |
 |---|---|
 | `/lib/ld-linux-armhf.so.3` exists | the 32-bit build, exactly as before (its own lines of `Cuphead.sh`, unchanged) |
-| no 32-bit loader, `uname -m` = `aarch64` | the 64-bit build: `Cuphead.sh` sources `cuphead/launch64.sh`, which runs its own setup and the game |
+| no 32-bit loader | the 64-bit build: `Cuphead.sh` sources `cuphead/launch64.sh`, which runs its own setup and the game |
 | `CUPHEAD_ROUTE=64` | the 64-bit build on a system that has both (a test switch, e.g. on the RG34XX-SP) |
 | anything else | a message: the firmware needs 32-bit (armhf) support |
 
@@ -83,7 +84,8 @@ own audio driver choice (a 64-bit program reaches the sound server directly), th
 PortMaster's pad mapping, the exit hotkey for `ua_host64`.
 
 **The setup** (`setup64/patchscript`; markers in `gamedata/.setup64/`, PortMaster's
-`PATCH_FAIL_MSG:` lines, log `patchlog.txt`). First the setup's Python, as in the 32-bit setup,
+`PATCH_FAIL_MSG:` lines, log `patchlog.txt`). First PortMaster's Python, as in the 32-bit setup (and
+`setup64/lib/`: Debian 11's OpenSSL 1.1, which that Python links for its downloads),
 and the converter copied into the work folder in portmaster-unity's own layout
 (`converter/convert/pmunity` beside `converter/tools/il2cpp`, where the IL2CPP step finds its
 scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2cpp/`). Then:
@@ -116,8 +118,7 @@ scripts: package.sh copies portmaster-unity's `tools/il2cpp/` into `setup64/il2c
    holds the code, and IL2CPP reads no dllmap, so the helper's `DllImport("SDL2")` goes through
    ua_host's plugin map, `setup64/plugins-il2cpp.json`). android-data rewrites the 2017.4.9f1 data
    for the 2017.4.40f1 player.
-7. **Installing** into `arm64/`, `.cuphead_ready64`, then the tools and (unless `keep_installers=1`)
-   the installers are removed.
+7. **Installing** into `arm64/`, `.cuphead_ready64`, then the tools and the installers are removed.
 
 At run time `launch64.sh` also sets `CUPHEAD_CODEWARM=0`: the helper's code warm-up only helps
 Mono's JIT.
@@ -181,7 +182,7 @@ Set in the environment, e.g. as `export` lines in `Cuphead.sh` (after `get_contr
 | `CUPHEAD_RUMBLE=0` / `=game` | no rumble / the game's own rumble. Default: the game's hit rumble as short SDL haptic pulses that end by themselves (the RG34XX-SP's motor did not stop on the game's stop call when the port ran under box64; not re-checked on this route yet) |
 | `CUPHEAD_FX=half` / `sharp` | cheaper film blur (changes the picture slightly; default `game`) |
 | `CUPHEAD_RTFIT`, `CUPHEAD_HEAVYSPRITES`, `CUPHEAD_DECOR`, `CUPHEAD_CAMTRIM`, `CUPHEAD_ATLASTRIM` `=0` | turn off one of the helper's defaults above (for comparisons) |
-| `UA_FPS=<seconds>` | how often `log.txt` gets a line of frame statistics (launcher default 10) |
+| `UA_FPS=<seconds>` | a line of frame statistics in `log.txt` every that many seconds (off by default) |
 | `UA_PAD_NAME` | the pad name the game sees (launcher default `Xbox Wireless Controller`) |
 | `CUPHEAD_ROUTE=64` | a test switch: the [64-bit build](#the-64-bit-build) on a system that can run the 32-bit one (set it above the launcher's route choice, e.g. as an `export` line right after `get_controls`) |
 

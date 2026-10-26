@@ -24,14 +24,17 @@ It builds:
 - portmaster-unity's runtime (`ua_host`, in Docker) if it is not built yet, and its 64-bit build
   for the [64-bit build](technical.md#the-64-bit-build) (`ARCH=arm64 runtime/build.sh`:
   `runtime/host/out/arm64/ua_host`, shipped as `cuphead/ua_host64`);
-- the setup's Python (`pm/build_pybundle.sh`: python-build-standalone's CPython 3.12 with UnityPy
-  and the image libraries; it downloads what is not cached in `pm/cache/` yet);
+- the Python packages the setup adds to PortMaster's `python_3.11` runtime (`pm/build_pylibs.sh`:
+  UnityPy and the image libraries for CPython 3.11, aarch64; it downloads what is not cached in
+  `pm/cache/wheels311/` yet), and Debian 11's OpenSSL 1.1 for the 64-bit setup's downloads;
 
 and copies the converter (`pmunity`), the 64-bit build's launch part and setup (`launch64.sh`,
 `setup64/` with portmaster-unity's `tools/il2cpp/` scripts) and every licence into it
-(`cuphead/licenses/`: this project's, portmaster-unity's and its THIRD_PARTY.md, libhybris, the
-video decoders of both runtimes (`*.arm64.txt`: the 64-bit one's), the .NET runtime, Mono.Cecil,
-the setup's Python and its packages). The 32-bit build's files are the same as without the 64-bit
+(`cuphead/licenses/`, one `LICENSE.<component>.txt` each: this project's, portmaster-unity's
+with its THIRD_PARTY.md, libhybris, the video decoders of both runtimes, the .NET runtime,
+Mono.Cecil, OpenSSL and each Python package). Both runtimes are built with `STEAMSTUB=0`
+(portmaster-unity's Steamworks stand-ins left out: Cuphead's GOG build has no Steamworks), and
+package.sh rebuilds them that way when they are not. The 32-bit build's files are the same as without the 64-bit
 build; only `Cuphead.sh` (the route choice), `port.json` and the READMEs changed with it.
 
 Needs: Docker, Python 3 with pip, curl, the .NET 8 SDK (`DOTNET=` if `dotnet` is not on the PATH).
@@ -53,7 +56,7 @@ export PMUNITY_ANDROID_PLAYER=/path/to/unpacked/android-player
 ./build.sh "<Cuphead.app>" out      # -> out/device/ = ports/cuphead/; PYTHON=, DOTNET=, PMUNITY=
 ```
 
-Copy `out/device/` to the handheld as `ports/cuphead/` and `pm/Cuphead.sh` into `ports/`. The
+Copy `out/device/` to the handheld as `ports/cuphead/` and `pm/cuphead/Cuphead.sh` into `ports/`. The
 folder is marked as set up (`.cuphead_ready`), so the launcher skips the on-device setup.
 Re-running `build.sh` continues where it stopped (the conversion keeps a journal in
 `out/Cuphead_Data`).
@@ -61,7 +64,7 @@ Re-running `build.sh` continues where it stopped (the conversion keeps a journal
 `SHADER_PRECISION=highp ./build.sh ...` samples textures at full precision, as desktop GPUs do
 ([technical.md](technical.md#options)). `TEXTURE_QUALITY=fast` encodes textures as the setup's
 Fast answer does (default `medium`, what the port is tested with). The folder matches what the
-on-device setup leaves in `ports/cuphead/` (same packing options, `setup.txt`, `port.json`,
+on-device setup leaves in `ports/cuphead/` (same packing options, `port.json`,
 `licenses/`).
 
 ## The 64-bit build (`build64.sh`, draft)

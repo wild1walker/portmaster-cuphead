@@ -84,7 +84,7 @@ body:
       label: Log
       description: |
         Drag and drop `ports/cuphead/log.txt` from right after the slow part into this box
-        (it is replaced at the next launch; the one before is `log.prev.txt`).
+        (it is replaced at the next launch).
 
   - type: textarea
     id: more

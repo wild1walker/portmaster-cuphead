@@ -1,0 +1,81 @@
+#!/bin/bash
+
+XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+
+if [ -d "/opt/system/Tools/PortMaster/" ]; then
+  controlfolder="/opt/system/Tools/PortMaster"
+elif [ -d "/opt/tools/PortMaster/" ]; then
+  controlfolder="/opt/tools/PortMaster"
+elif [ -d "$XDG_DATA_HOME/PortMaster/" ]; then
+  controlfolder="$XDG_DATA_HOME/PortMaster"
+else
+  controlfolder="/roms/ports/PortMaster"
+fi
+
+source $controlfolder/control.txt
+[ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
+get_controls
+
+GAMEDIR="/$directory/ports/cuphead"
+cd "$GAMEDIR"
+> "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+
+# first launch: the setup builds the game from the player's copy in gamedata/, with PortMaster's
+# Python runtime (setup/pylibs: the extra packages it needs)
+runtime="python_3.11"
+export python_dir="$HOME/$runtime"
+run_setup() {   # run_setup <patchscript> <time>
+  if [ ! -f "$controlfolder/libs/${runtime}.squashfs" ]; then
+    if [ ! -f "$controlfolder/harbourmaster" ]; then
+      pm_message "This port requires the latest PortMaster to run, please go to https://portmaster.games/ for more info."
+      sleep 5
+      exit 1
+    fi
+    $ESUDO $controlfolder/harbourmaster --quiet --no-check runtime_check "${runtime}.squashfs"
+  fi
+  mkdir -p "$python_dir"
+  [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
+  $ESUDO mount "$controlfolder/libs/${runtime}.squashfs" "$python_dir"
+  export GAMEDIR DEVICE_ARCH controlfolder
+  export PATCHER_FILE="$1" PATCHER_GAME="Cuphead" PATCHER_TIME="$2"
+  export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
+  $ESUDO chmod +x "$1"
+  source "$controlfolder/utils/patcher.txt"
+  [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
+}
+
+# the pad reaches the game as an Android gamepad; Rewired maps this name as a standard pad
+export UA_PAD_NAME="Xbox Wireless Controller"
+export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+
+# Unity's Android player for Cuphead is 32-bit: a firmware without 32-bit (armhf) libraries gets
+# the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them)
+if [ "$CUPHEAD_ROUTE" = 64 ] || [ ! -e /lib/ld-linux-armhf.so.3 ]; then
+  source "$GAMEDIR/launch64.sh"
+  exit
+fi
+
+[ -f "$GAMEDIR/.cuphead_ready" ] || run_setup "$GAMEDIR/setup/patchscript" "one to a few hours, once"
+if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
+  pm_message "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
+  sleep 8
+  pm_finish
+  exit 1
+fi
+
+export SDL_AUDIODRIVER=alsa
+# dArkOS on kernels before 5.6 (RK3326): its 32-bit alsa-lib uses PCM ioctls these kernels lack,
+# so the game's sound goes through the system's 64-bit aplay instead
+kv=$(uname -r); kmaj=${kv%%.*}; kmin=${kv#*.}; kmin=${kmin%%.*}
+if [ "$CFW_NAME" = "dArkOS" ] && { [ "$kmaj" -lt 5 ] || { [ "$kmaj" -eq 5 ] && [ "$kmin" -lt 6 ]; }; }; then
+  a="aplay -q -t raw -f S16_LE -r 48000 -c 2 --buffer-time=40000"
+  export ANDROID_SLES_OUTPUT=pipe
+  export ANDROID_SLES_PIPE_CMD="$a -D plughw:0,0 --period-time=10000 - 2>/dev/null || exec $a -"
+fi
+
+$ESUDO chmod +x "$GAMEDIR/ua_host"
+$GPTOKEYB "ua_host" -c "$GAMEDIR/cuphead_hotkey.gptk" &
+pm_platform_helper "$GAMEDIR/ua_host"
+LD_LIBRARY_PATH=/lib32:/usr/lib32:$LD_LIBRARY_PATH ./ua_host "$GAMEDIR"
+
+pm_finish

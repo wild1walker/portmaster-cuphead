@@ -1,0 +1,95 @@
+#!/bin/bash
+# First-launch setup (run by Cuphead.sh through PortMaster's patcher): builds the game for Unity's
+# Android player 2017.4.9f1 from the player's copy of Cuphead in gamedata/ (Cuphead.app or GOG's
+# macOS installers). Each step is marked done, so an interrupted setup continues where it stopped.
+GD="$GAMEDIR/gamedata"; D="$GD/Cuphead_Data"; S="$GAMEDIR/setup"; W="$GD/.setup"
+UNITY_URL=https://download.unity3d.com/download_unity/6d84dfc57ccf/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe
+UNITY_SHA256=079b39d13f451025601d10d2f100868f51092134ff7dee963bc2fa36a58701b9
+UNITY_EXE=$(basename "$UNITY_URL")
+PKG='$INSTDIR$_59_'
+
+exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1
+fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
+step() { echo "== $(date +%H:%M:%S) $*"; }
+SEVENZ="$controlfolder/7zzs.$DEVICE_ARCH"
+mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
+export PYTHONPATH="$S/pylibs:$S" PYTHONDONTWRITEBYTECODE=1
+pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m pmunity "$@"); }
+
+# 1. the game's data, from Cuphead.app or the installers (largest first: the game, then the DLC)
+if [ ! -f "$W/.step_game" ]; then
+  if [ ! -f "$D/globalgamemanagers" ]; then
+    APP=$(ls -d "$GD"/Cuphead.app "$GD"/*/Cuphead.app 2>/dev/null | head -1)
+    PKGS=$(ls -S "$GD"/*.pkg 2>/dev/null)
+    if [ -z "$APP" ] && [ -n "$PKGS" ]; then
+      [ "$(df -m "$GD" | awk 'NR==2{print $4}')" -gt 9000 ] || fail "The setup needs about 10 GB free on the card."
+      step "unpacking GOG's installers"
+      rm -rf "$W/pkgroot"
+      pm macpkg "$W/pkgroot" $PKGS || fail "Could not unpack the installers (see patchlog.txt)."
+      APP=$(find "$W/pkgroot" -maxdepth 4 -type d -name 'Cuphead.app' | head -1)
+    fi
+    [ -n "$APP" ] || fail "Put Cuphead.app (GOG macOS) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata."
+    grep -aqs "2017.4.9f1" "$APP/Contents/Resources/Data/globalgamemanagers" \
+      || fail "This Cuphead version is not supported (the port needs GOG's macOS 1.3.4)."
+    cp "$APP/Contents/Resources/"goggame-*.info "$GD/" 2>/dev/null   # (the DLC check reads them)
+    rm -rf "$GD/mono-etc"; cp -r "$APP/Contents/Mono/etc" "$GD/mono-etc" || fail "The game's Mono folder is missing."
+    mv "$APP/Contents/Resources/Data" "$D" || fail "Could not move the game's data."
+    rm -rf "$W/pkgroot" "$APP"
+  fi
+  touch "$W/.step_game"
+fi
+
+# 2. Unity's Android player 2017.4.9f1, from Unity (or its installer, if put in gamedata/)
+P="$W/player/$PKG"
+if [ ! -f "$W/.step_player" ]; then
+  I="$GD/$UNITY_EXE"
+  if [ "$(sha256sum "$I" 2>/dev/null | cut -d' ' -f1)" != "$UNITY_SHA256" ]; then
+    I="$W/$UNITY_EXE"
+    step "downloading Unity's Android player (about 190 MB)"
+    curl -fL --retry 3 -o "$I" "$UNITY_URL" || wget -O "$I" "$UNITY_URL"
+    [ "$(sha256sum "$I" 2>/dev/null | cut -d' ' -f1)" = "$UNITY_SHA256" ] || fail "Downloading Unity's player failed: is Wi-Fi on?"
+  fi
+  step "unpacking Unity's player"
+  rm -rf "$W/player"
+  "$SEVENZ" x -y -o"$W/player" "$I" "$PKG/Variations/mono/Release/Libs/armeabi-v7a/*" \
+    "$PKG/Variations/mono/Release/MonoLibs/armeabi-v7a/libmono.so" "$PKG/Variations/mono/Managed/*" \
+    "$PKG/Data/unity default resources" >/dev/null || fail "Could not unpack Unity's player."
+  rm -f "$W/$UNITY_EXE"
+  touch "$W/.step_player"
+fi
+
+# 3. conversion: GLES3 shaders, ASTC textures, audio, settings (the texture quality the first run
+# was given is kept, so a resumed setup does not mix qualities)
+Q=$(cat "$W/.texture_quality" 2>/dev/null); Q=${Q:-${TEXTURE_QUALITY:-medium}}
+echo "$Q" > "$W/.texture_quality"
+if [ ! -f "$W/.step_convert" ]; then
+  step "converting the game, texture quality $Q (the long part)"
+  pm convert "$D" --config "$S/cuphead.json" --plugin "$S/animclips.py" --set textures.quality="$Q" \
+    || fail "Converting the game failed (see patchlog.txt). Launch again to continue."
+  touch "$W/.step_convert"
+fi
+
+# 4. the APK and OBB the player reads, with the port's code patches and helper
+if [ ! -f "$W/.step_package" ]; then
+  step "packing the game"
+  chmod +x "$S/codepatch"
+  pm android-data --src "$D" --pkg "$P" --out "$W/android" --name Cuphead --package com.cupheadport.game \
+    --root-file animclips.txt --managed-file "$S/CupheadPort.dll" --game-managed "$D/Managed" \
+    --assembly-patch Assembly-CSharp.dll "env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 '$S/codepatch' --target=android {managed} {out}" \
+    --mono-etc "$GD/mono-etc" --dllmap SDL2=libSDL2-2.0.so.0 --consume-src --verify-bundles 2 --pack all --no-video-shader \
+    || fail "Packing the game failed (see patchlog.txt). Launch again to continue."
+  touch "$W/.step_package"
+fi
+
+# 5. into place; the setup's tools, work files and the player's copy of the game are removed
+step "installing"
+mkdir -p "$GAMEDIR/lib"
+for f in Libs/armeabi-v7a/libmain.so Libs/armeabi-v7a/libunity.so MonoLibs/armeabi-v7a/libmono.so; do
+  cp "$P/Variations/mono/Release/$f" "$GAMEDIR/lib/" || fail "Could not install Unity's player."
+done
+[ -d "$W/android/zip/assets" ] && rm -rf "$GAMEDIR/assets"
+for f in "$W"/android/zip/*; do mv -f "$f" "$GAMEDIR/" || fail "Could not install $(basename "$f")."; done
+rm -rf "$W" "$D" "$GD/mono-etc" "$S" "$GD"/*.pkg "$GD"/*.app "$GD"/goggame-*.info
+touch "$GAMEDIR/.cuphead_ready"
+sync
+step "setup finished"

@@ -84,15 +84,13 @@ The first time you start Cuphead, PortMaster shows a setup screen with the progr
    - **Fast:** the setup takes about an hour less, and the textures are slightly less exact (hard to
      see on a small screen).
 
-   Your first answer is kept, even if the setup is interrupted. Older PortMaster versions do not
-   ask: then `ports/cuphead/setup.txt` decides (`texture_quality=medium` or `fast`).
+   Your first answer is kept, even if the setup is interrupted.
 2. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
    downloads and unpacks Unity's Android player, converts the game's graphics, textures and
    settings for the handheld (the long part), and packs everything for the player.
 3. **When it is done, the game starts.** The setup then deletes your installers (or what is left
    of `Cuphead.app`) from `gamedata/`, since the built game does not need them: about 5 GB back
-   with the DLC. To keep them, set `keep_installers=1` in `ports/cuphead/setup.txt` before the
-   setup finishes.
+   with the DLC.
 
 Good to know:
 
@@ -243,7 +241,7 @@ Please attach these two files from `ports/cuphead/`:
 
 | File | What is in it |
 |---|---|
-| `log.txt` | the last time the game ran (the time before that: `log.prev.txt`) |
+| `log.txt` | the last time the game ran |
 | `patchlog.txt` | the setup |
 
 On Knulli they are in `roms/ports/cuphead/` on the card, or `share/roms/ports/cuphead/` over the
@@ -276,8 +274,8 @@ Credits:
   the setup.
 - The port's runtime (`ua_host`) and converter use [libhybris](https://github.com/libhybris/libhybris)
   (Apache 2.0); the runtime links the video decoders libvpx, libvorbis, libogg, libopus and OpenH264.
-- The setup runs on [python-build-standalone](https://github.com/astral-sh/python-build-standalone)'s
-  CPython with [UnityPy](https://github.com/K0lb3/UnityPy) and ARM's astc-encoder; the code patcher
+- The setup runs on PortMaster's Python runtime (`python_3.11`) with [UnityPy](https://github.com/K0lb3/UnityPy)
+  and ARM's astc-encoder (`setup/pylibs/`); the code patcher
   uses [Mono.Cecil](https://github.com/jbevain/cecil) and the .NET runtime.
 
 The release zip carries the licence of every part it contains, in `cuphead/licenses/`.
