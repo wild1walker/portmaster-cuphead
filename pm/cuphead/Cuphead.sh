@@ -63,6 +63,10 @@ if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
   exit 1
 fi
 
+# the resolution the setup asked for (resolution.txt: "device", or a share of the panel's size,
+# which the display engine scales up to the whole panel)
+R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
+
 export SDL_AUDIODRIVER=alsa
 # dArkOS on kernels before 5.6 (RK3326): its 32-bit alsa-lib uses PCM ioctls these kernels lack,
 # so the game's sound goes through the system's 64-bit aplay instead

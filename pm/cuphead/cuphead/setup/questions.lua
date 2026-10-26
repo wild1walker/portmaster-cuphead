@@ -9,4 +9,14 @@ return {
       { "fast", "Fast (shorter setup)" },
     },
   },
+  {
+    id = "RESOLUTION",
+    question = "Resolution the game renders at? The screen shows it full size either way; lower is softer but faster. (Change it later in ports/cuphead/resolution.txt.)",
+    options = {
+      { "device", "Device resolution (recommended)" },
+      { "0.833", "5/6 of the device's" },
+      { "0.75", "3/4 of the device's" },
+      { "0.5", "1/2 of the device's" },
+    },
+  },
 }

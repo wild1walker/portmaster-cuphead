@@ -14,6 +14,10 @@ if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
   exit 1
 fi
 
+# the resolution the setup asked for (resolution.txt: "device", or a share of the panel's size,
+# which the display engine scales up to the whole panel)
+R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
+
 # the helper's code warm-up is for Mono's JIT (the Mono route: on, as in the 32-bit build); IL2CPP's
 # code is compiled already
 [ -f "$GAMEDIR/arm64/lib/libmonobdwgc-2.0.so" ] || export CUPHEAD_CODEWARM=0

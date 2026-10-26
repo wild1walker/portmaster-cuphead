@@ -17,6 +17,9 @@ runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support
 64-bit version instead (about 12 GB free during the setup), which runs the game's code on Unity's
 Mono for 64-bit ARM. Steam's achievements and cloud saves are not available.
 
+The setup asks for the texture quality and the resolution the game renders at (default: the
+device's; `ports/cuphead/resolution.txt` changes it later: `device`, or a share such as `0.75`).
+
 Saves: `ports/cuphead/data/` (64-bit build: `ports/cuphead/arm64/data/`).
 
 Source and build instructions: https://github.com/wild1walker/portmaster-cuphead
