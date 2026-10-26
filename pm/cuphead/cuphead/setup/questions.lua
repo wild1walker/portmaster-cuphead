@@ -1,20 +1,40 @@
 -- Asked by PortMaster's patcher before the setup starts (PATCHER_QUESTIONS in Cuphead.sh); each
 -- answer reaches setup/patchscript as <id>=<value> in its environment.
-return {
+-- The picture-shape question only where it changes something (PortMaster's DISPLAY_WIDTH and
+-- DISPLAY_HEIGHT): none on 16:9 or wider screens; on 3:2 and 16:10 fill (the default: the sides
+-- cropped a little) or the game's 16:9 with bars; on 4:3 and narrower the bars (the default) or a
+-- full-screen crop; all three when the screen's size is unknown.
+local function screen_aspect()
+  local ok, w, h = pcall(function() return tonumber(os.getenv("DISPLAY_WIDTH")), tonumber(os.getenv("DISPLAY_HEIGHT")) end)
+  if ok and w and h and h > 0 then return w / h end
+end
+local a = screen_aspect()
+local shape
+if not a then
+  shape = {
+    { "fill", "Fit the screen (recommended)" },
+    { "16:9", "16:9 with bars" },
+    { "crop", "Fill any screen (crops the sides)" },
+  }
+elseif a < 1.7 and a >= 1.45 then
+  shape = {
+    { "fill", "Fill the screen, sides cropped a little (recommended)" },
+    { "16:9", "16:9 with bars" },
+  }
+elseif a < 1.45 then
+  shape = {
+    { "fill", "16:9 with bars (recommended)" },
+    { "crop", "Fill the screen (crops the sides)" },
+  }
+end
+
+local questions = {
   {
     id = "TEXTURE_QUALITY",
     question = "Texture quality? Medium is what this port is tested with. Fast makes the setup about an hour shorter, with slightly less exact textures.",
     options = {
       { "medium", "Medium (recommended)" },
       { "fast", "Fast (shorter setup)" },
-    },
-  },
-  {
-    id = "ASPECT",
-    question = "Picture shape? Fill fits the game to the screen (on 3:2 and 16:10 screens the sides are cropped a little; 4:3 screens keep the bars). 16:9 shows the whole picture with bars above and below. (Change it later in ports/cuphead/aspect.txt.)",
-    options = {
-      { "fill", "Fill the screen (recommended)" },
-      { "16:9", "16:9 with bars" },
     },
   },
   {
@@ -28,3 +48,11 @@ return {
     },
   },
 }
+if shape then
+  table.insert(questions, 2, {
+    id = "ASPECT",
+    question = "Picture shape? Cuphead is 16:9. (Change it later in ports/cuphead/aspect.txt: fill, 16:9 or crop.)",
+    options = shape,
+  })
+end
+return questions
