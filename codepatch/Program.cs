@@ -1,6 +1,6 @@
-// Code patches for Cuphead's managed assemblies (Mac build 1.3.4 running on the Linux player, or
+// Code patches for Cuphead's managed assemblies (Mac build 1.3.4, GOG or Steam, running on the Linux player, or
 // with --target=android on Unity's Android player through portmaster-unity).
-// Usage: codepatch [--target=linux|android] [--test-hooks|--test=a,b] <Managed dir in> <out dir>
+// Usage: codepatch [--target=linux|android] [--steam-dlc] [--test-hooks|--test=a,b] <Managed dir in> <out dir>
 // Writes patched copies of the assemblies it changes into <out dir>; the originals are not touched.
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -18,6 +18,8 @@ static class Program
         if (only != null) testHooks = true;
         // --skip=<name>[,<name>]: leave these patches out (A/B tests of one patch)
         string[] skip = args.FirstOrDefault(a => a.StartsWith("--skip="))?.Substring(7).Split(',') ?? Array.Empty<string>();
+        // --steam-dlc: the Steam build's data has The Delicious Last Course (the setup checks its bundles)
+        Patches.SteamDlc = args.Contains("--steam-dlc");
         args = args.Where(a => !a.StartsWith("--")).ToArray();
         if (args.Length != 2) { Console.Error.WriteLine("usage: codepatch [--test-hooks] <Managed dir> <out dir>"); return 2; }
         string inDir = args[0], outDir = args[1];
@@ -34,6 +36,7 @@ static class Program
         {
             if (skip.Contains(name)) { Console.WriteLine($"skip {name}"); continue; }
             try { patch(m); Console.WriteLine($"ok   {name}"); }
+            catch (Patches.NotThisStore) { Console.WriteLine($"n/a  {name}"); }
             catch (Exception e) { failures++; Console.WriteLine($"FAIL {name}: {e.Message}"); }
         }
         // Never reference the patcher's own runtime (System.Private.CoreLib / System.Runtime): the game runs on Mono 2.0
@@ -49,8 +52,10 @@ static class Patches
     public static readonly (string, Action<ModuleDefinition>)[] All =
     {
         ("rewired-linux-input", RewiredLinux),
-        ("gog-offline", GogOffline),
-        ("dlc-from-gog-install", DlcFromGogInstall),
+        ("gog-offline", Gog(GogOffline)),
+        ("dlc-from-gog-install", Gog(DlcFromGogInstall)),
+        ("steam-offline", Steam(SteamOffline)),
+        ("dlc-from-steam-install", Steam(DlcFromSteamInstall)),
         ("fonts-lazy", FontsLazy),
         ("diagnostics", DiagnosticsTick),
         ("pad-keyboard-only", PadKeyboardOnly),
@@ -68,8 +73,10 @@ static class Patches
     {
         ("rewired-android-input", RewiredAndroid),
         ("pad-prompts-android", PadPromptsAndroid),
-        ("gog-offline", GogOffline),
-        ("dlc-from-gog-install", DlcFromGogInstall),
+        ("gog-offline", Gog(GogOffline)),
+        ("dlc-from-gog-install", Gog(DlcFromGogInstall)),
+        ("steam-offline", Steam(SteamOffline)),
+        ("dlc-from-steam-install", Steam(DlcFromSteamInstall)),
         ("fonts-lazy", FontsLazy),
         ("diagnostics", DiagnosticsTick),
         ("aspect-crop", AspectCrop),
@@ -488,6 +495,13 @@ static class Patches
             if (md.IsVirtual && !md.IsNewSlot && md.Name.StartsWith("OnAuth")) md.IsNewSlot = true;
             if (md.Name == "Init" || (!md.IsConstructor && TouchesGalaxy(md))) StubOut(md);
         }
+        LocalSavePath(m, t);
+        // fields of Galaxy types (none expected besides gogManager, which stays null)
+    }
+
+    // The game's saves in persistentDataPath/saves/ (the GOG and Steam builds alike)
+    static void LocalSavePath(ModuleDefinition m, TypeDefinition t)
+    {
         var savePath = t.Properties.Single(p => p.Name == "SavePath").GetMethod;
         var getPdp = m.ImportReference(
             new MethodReference("get_persistentDataPath", m.TypeSystem.String,
@@ -498,7 +512,46 @@ static class Patches
         var b = savePath.Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
         var il = b.GetILProcessor();
         il.Emit(OpCodes.Call, getPdp); il.Emit(OpCodes.Ldstr, "saves/"); il.Emit(OpCodes.Call, combine); il.Emit(OpCodes.Ret);
-        // fields of Galaxy types (none expected besides gogManager, which stays null)
+    }
+
+    // The store's patches apply to its build only (GOG: OnlineInterfaceGog, Steam: SteamManager)
+    internal class NotThisStore : Exception { }
+    static Action<ModuleDefinition> Gog(Action<ModuleDefinition> p) => m => { if (m.GetType("OnlineInterfaceGog") == null) throw new NotThisStore(); p(m); };
+    static Action<ModuleDefinition> Steam(Action<ModuleDefinition> p) => m => { if (m.GetType("SteamManager") == null) throw new NotThisStore(); p(m); };
+    public static bool SteamDlc;
+
+    // The Steam build starts Steamworks in SteamManager.Awake (RestartAppIfNecessary, SteamAPI.Init),
+    // which needs the Steam client and its Mac library. Awake keeps only its singleton part, so
+    // SteamManager.Initialized stays false and the game skips every Steam call (it checks
+    // Initialized before each: achievements, stats, the store overlay); the saves are local.
+    static void SteamOffline(ModuleDefinition m)
+    {
+        var sm = Type(m, "SteamManager");
+        var awake = Method(sm, "Awake");
+        var fInst = Field(sm, "s_instance");
+        MethodReference Called(string name) => awake.Body.Instructions
+            .Where(i => i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt)
+            .Select(i => (MethodReference)i.Operand).First(r => r.Name == name);
+        var neq = Called("op_Inequality"); var getGo = Called("get_gameObject"); var destroy = Called("Destroy");
+        var b = awake.Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
+        var il = b.GetILProcessor();
+        var keep = il.Create(OpCodes.Ldarg_0);
+        // if (s_instance != null) { Destroy(gameObject); return; } s_instance = this;
+        il.Emit(OpCodes.Ldsfld, fInst); il.Emit(OpCodes.Ldnull); il.Emit(OpCodes.Call, neq); il.Emit(OpCodes.Brfalse, keep);
+        il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, getGo); il.Emit(OpCodes.Call, destroy); il.Emit(OpCodes.Ret);
+        il.Append(keep); il.Emit(OpCodes.Stsfld, fInst); il.Emit(OpCodes.Ret);
+        LocalSavePath(m, Type(m, "OnlineInterfaceSteam"));
+    }
+
+    // DLCManager asks Steam whether The Delicious Last Course is installed. Steam installs the DLC's
+    // bundles into the game's StreamingAssets, so the setup checks for them (--steam-dlc).
+    static void DlcFromSteamInstall(ModuleDefinition m)
+    {
+        var t = Type(m, "DLCManager");
+        var b = Method(t, "refreshDLC").Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
+        var il = b.GetILProcessor();
+        il.Emit(SteamDlc ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0); il.Emit(OpCodes.Stsfld, Field(t, "dlcAvailable")); il.Emit(OpCodes.Ret);
+        StubOut(Method(t, "checkInstallationStatusChanged"));
     }
 
     internal static IMetadataScope UnityCore(ModuleDefinition m) =>
