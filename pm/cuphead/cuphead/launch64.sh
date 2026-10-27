@@ -13,6 +13,7 @@ if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
   pm_finish
   exit 1
 fi
+dlc_waiting "$GAMEDIR/arm64" && export DLC_TARGET="$GAMEDIR/arm64" && run_setup "$GAMEDIR/setup/dlcscript" "about half an hour, once" no-questions
 
 # the picture shape the setup asked for (aspect.txt: "fill", "16:9" for the game's letterbox on any
 # screen, "crop" to fill 4:3 screens too, or a shape such as "4:3" between the two),

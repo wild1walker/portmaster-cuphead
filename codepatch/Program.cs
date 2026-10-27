@@ -544,13 +544,16 @@ static class Patches
     }
 
     // DLCManager asks Steam whether The Delicious Last Course is installed. Steam installs the DLC's
-    // bundles into the game's StreamingAssets, so the setup checks for them (--steam-dlc).
+    // bundles into the game's StreamingAssets, so the setup checks for them (--steam-dlc); added after
+    // the setup, the DLC leaves cuphead_dlc beside the game (setup/dlcscript).
     static void DlcFromSteamInstall(ModuleDefinition m)
     {
         var t = Type(m, "DLCManager");
         var b = Method(t, "refreshDLC").Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
         var il = b.GetILProcessor();
-        il.Emit(SteamDlc ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0); il.Emit(OpCodes.Stsfld, Field(t, "dlcAvailable")); il.Emit(OpCodes.Ret);
+        if (SteamDlc) il.Emit(OpCodes.Ldc_I4_1);
+        else EmitBesideExists(m, il, "cuphead_dlc");
+        il.Emit(OpCodes.Stsfld, Field(t, "dlcAvailable")); il.Emit(OpCodes.Ret);
         StubOut(Method(t, "checkInstallationStatusChanged"));
     }
 
@@ -559,12 +562,27 @@ static class Patches
 
     // DLCManager asks Galaxy whether The Delicious Last Course is installed. GOG's offline installers
     // leave goggame-<DLC product id>.info next to the game when the DLC is installed; the port's setup
-    // copies the .info files beside the player (beside the APK/OBB on Android), so check for that.
+    // copies the .info files beside the player (beside the APK/OBB on Android), so check for that,
+    // or for cuphead_dlc there (the DLC added after the setup: setup/dlcscript).
     static void DlcFromGogInstall(ModuleDefinition m)
     {
         var t = Type(m, "DLCManager");
         var refresh = Method(t, "refreshDLC");
         var fAvail = Field(t, "dlcAvailable");
+        var b = refresh.Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
+        var il = b.GetILProcessor();
+        var set = il.Create(OpCodes.Stsfld, fAvail);
+        EmitBesideExists(m, il, "goggame-2048763853.info");
+        il.Emit(OpCodes.Dup); il.Emit(OpCodes.Brtrue, set); il.Emit(OpCodes.Pop);
+        EmitBesideExists(m, il, "cuphead_dlc");
+        il.Append(set); il.Emit(OpCodes.Ret);
+        StubOut(Method(t, "checkInstallationStatusChanged"));
+    }
+
+    // File.Exists(Path.Combine(Path.GetDirectoryName(Application.dataPath), name)): beside the data
+    // folder (desktop), or beside the APK/OBB that dataPath names on Android
+    static void EmitBesideExists(ModuleDefinition m, ILProcessor il, string name)
+    {
         var getDataPath = m.ImportReference(new MethodReference("get_dataPath", m.TypeSystem.String,
             new TypeReference("UnityEngine", "Application", m, UnityCore(m))) { HasThis = false });
         var combine = m.ImportReference(new MethodReference("Combine", m.TypeSystem.String,
@@ -576,14 +594,8 @@ static class Patches
         var exists = m.ImportReference(new MethodReference("Exists", m.TypeSystem.Boolean,
             new TypeReference("System.IO", "File", m, m.TypeSystem.CoreLibrary)) { HasThis = false,
             Parameters = { new ParameterDefinition(m.TypeSystem.String) } });
-        var b = refresh.Body; b.Instructions.Clear(); b.Variables.Clear(); b.ExceptionHandlers.Clear();
-        var il = b.GetILProcessor();
-        // GetDirectoryName(dataPath): the folder holding the data folder (desktop), or holding the
-        // APK/OBB that dataPath names on Android ("dataPath/.." only resolves for a directory)
-        il.Emit(OpCodes.Call, getDataPath); il.Emit(OpCodes.Call, dirName); il.Emit(OpCodes.Ldstr, "goggame-2048763853.info");
+        il.Emit(OpCodes.Call, getDataPath); il.Emit(OpCodes.Call, dirName); il.Emit(OpCodes.Ldstr, name);
         il.Emit(OpCodes.Call, combine); il.Emit(OpCodes.Call, exists);
-        il.Emit(OpCodes.Stsfld, fAvail); il.Emit(OpCodes.Ret);
-        StubOut(Method(t, "checkInstallationStatusChanged"));
     }
 
     // The Mac build compiled Rewired's InputManager.DetectPlatform with platform = OSX, so Rewired

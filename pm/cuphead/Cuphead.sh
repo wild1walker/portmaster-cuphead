@@ -24,7 +24,7 @@ cd "$GAMEDIR"
 # Python runtime (setup/pylibs: the extra packages it needs)
 runtime="python_3.11"
 export python_dir="$HOME/$runtime"
-run_setup() {   # run_setup <patchscript> <time>
+run_setup() {   # run_setup <patchscript> <time> [no-questions]
   if [ ! -f "$controlfolder/libs/${runtime}.squashfs" ]; then
     if [ ! -f "$controlfolder/harbourmaster" ]; then
       pm_message "This port requires the latest PortMaster to run, please go to https://portmaster.games/ for more info."
@@ -39,9 +39,20 @@ run_setup() {   # run_setup <patchscript> <time>
   export GAMEDIR DEVICE_ARCH controlfolder DISPLAY_WIDTH DISPLAY_HEIGHT   # (the questions read the screen size)
   export PATCHER_FILE="$1" PATCHER_GAME="Cuphead" PATCHER_TIME="$2"
   export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
+  [ -n "$3" ] && unset PATCHER_QUESTIONS
   $ESUDO chmod +x "$1"
   source "$controlfolder/utils/patcher.txt"
   [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
+}
+
+# The Delicious Last Course added later (GOG's DLC installer, or a Cuphead.app with it, in
+# gamedata/): the setup adds it to the built game, once
+dlc_waiting() {   # dlc_waiting <built game folder>
+  [ -f "$1/cuphead_dlc" ] || [ -f "$1/goggame-2048763853.info" ] && return 1
+  for f in "$GAMEDIR"/gamedata/*.pkg "$GAMEDIR"/gamedata/Cuphead.app "$GAMEDIR"/gamedata/*/Cuphead.app; do
+    [ -e "$f" ] && return 0
+  done
+  return 1
 }
 
 # the pad reaches the game as an Android gamepad; Rewired maps this name as a standard pad
@@ -62,6 +73,7 @@ if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
   pm_finish
   exit 1
 fi
+dlc_waiting "$GAMEDIR" && export DLC_TARGET="$GAMEDIR" && run_setup "$GAMEDIR/setup/dlcscript" "about half an hour, once" no-questions
 
 # the picture shape the setup asked for (aspect.txt: "fill", "16:9" for the game's letterbox on any
 # screen, "crop" to fill 4:3 screens too, or a shape such as "4:3" between the two),

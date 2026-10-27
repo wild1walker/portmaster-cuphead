@@ -17,6 +17,10 @@ runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support
 64-bit version instead (about 12 GB free during the setup), which runs the game's code on Unity's
 Mono for 64-bit ARM. Steam's achievements and cloud saves are not available.
 
+**The DLC later:** put GOG's DLC installer (`.pkg`), or a `Cuphead.app` with the DLC (Steam: the
+DLC depot's files), into `ports/cuphead/gamedata/` and start Cuphead: it adds the DLC to the built
+game by itself (about half an hour, once; the game is not built again).
+
 The setup asks for the texture quality, the resolution and, where the screen is not 16:9, the
 picture shape. Resolution: the device's (default), or 5/6, 3/4 or 1/2 of it, scaled up to the full
 screen (softer but faster); `ports/cuphead/resolution.txt` changes it later (`device`, or a share

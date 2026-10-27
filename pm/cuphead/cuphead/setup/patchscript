@@ -11,6 +11,7 @@ step() { echo "== $(date +%H:%M:%S) $*"; }
 mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
 [ -n "$ASPECT" ] && echo "$ASPECT" > "$GAMEDIR/aspect.txt"                # (the launcher reads them)
 [ -n "$RESOLUTION" ] && echo "$RESOLUTION" > "$GAMEDIR/resolution.txt"
+[ -n "$TEXTURE_QUALITY" ] && echo "$TEXTURE_QUALITY" > "$GAMEDIR/texture_quality.txt"   # (setup/dlcscript's too)
 export PYTHONPATH="$S/pylibs:$S" PYTHONDONTWRITEBYTECODE=1
 pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m pmunity "$@"); }
 
@@ -75,7 +76,8 @@ if [ ! -f "$W/.step_package" ]; then
   touch "$W/.step_package"
 fi
 
-# 5. into place; the setup's tools, work files and the player's copy of the game are removed
+# 5. into place; the work files and the player's copy of the game are removed (the setup's tools
+# stay: they add the DLC when it comes later, setup/dlcscript)
 step "installing"
 mkdir -p "$GAMEDIR/lib"
 for f in Libs/armeabi-v7a/libmain.so Libs/armeabi-v7a/libunity.so MonoLibs/armeabi-v7a/libmono.so; do
@@ -83,7 +85,8 @@ for f in Libs/armeabi-v7a/libmain.so Libs/armeabi-v7a/libunity.so MonoLibs/armea
 done
 [ -d "$W/android/zip/assets" ] && rm -rf "$GAMEDIR/assets"
 for f in "$W"/android/zip/*; do mv -f "$f" "$GAMEDIR/" || fail "Could not install $(basename "$f")."; done
-rm -rf "$W" "$D" "$GD/mono-etc" "$S" "$GD"/*.pkg "$GD"/*.app "$GD"/goggame-*.info
+[ -f "$W/.dlc_files" ] && touch "$GAMEDIR/cuphead_dlc"
+rm -rf "$W" "$D" "$GD/mono-etc" "$GD"/*.pkg "$GD"/*.app "$GD"/goggame-*.info
 touch "$GAMEDIR/.cuphead_ready"
 sync
 step "setup finished"
