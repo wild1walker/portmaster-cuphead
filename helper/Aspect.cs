@@ -7,12 +7,15 @@ namespace CupheadPort
     // RGSP's 3:2 screen. By default the cameras fill 3:2 and 16:10 screens instead and the sides are
     // cropped (the full height is kept; on 3:2 about 7.8 % is cut from each side). Narrower screens
     // (4:3, square) keep the game's letterbox: a crop there would cut 12-22 % from each side of the
-    // play field. CUPHEAD_ASPECT=16:9: always the letterbox; CUPHEAD_ASPECT=crop: crop any screen.
+    // play field. CUPHEAD_ASPECT=16:9: always the letterbox; CUPHEAD_ASPECT=crop: crop any screen;
+    // CUPHEAD_ASPECT=<w>:<h> (e.g. 4:3 on a square screen): the picture at that shape, the sides
+    // cropped to it and bars above and below for the rest (between the two on narrow screens).
     // Screens 16:9 or wider keep the game's behaviour either way.
     public static class Aspect
     {
         const float NarrowestCrop = 1.45f;   // 3:2 is 1.5, 4:3 is 1.33
         static int crop = -1;                // 0 never, 1 3:2 and wider, 2 always
+        static float shape;                  // CUPHEAD_ASPECT=<w>:<h>: the picture's aspect (0: none)
 
         public static bool Crop()
         {
@@ -20,6 +23,15 @@ namespace CupheadPort
             {
                 string v = (Environment.GetEnvironmentVariable("CUPHEAD_ASPECT") ?? "").Trim();
                 crop = v == "16:9" ? 0 : v == "crop" ? 2 : 1;
+                string[] wh = v.Split(':');
+                float w, h;
+                if (crop == 1 && wh.Length == 2 && float.TryParse(wh[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out w) &&
+                    float.TryParse(wh[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out h) && w > 0 && h > 0)
+                {
+                    shape = w / h;
+                    if (shape >= 1.7777778f) crop = 0;       // 16:9 or wider: the game's letterbox
+                    else crop = 2;
+                }
             }
             return crop > 0;
         }
@@ -54,7 +66,9 @@ namespace CupheadPort
             float aspect = (float)Screen.width / Screen.height;
             if (aspect >= 1.7777778f || (crop == 1 && aspect < NarrowestCrop)) return false;
             float o = 1f - 0.1f * SettingsData.Data.overscan;
-            Rect rect = new Rect(0.5f - o / 2f, 0.5f - o / 2f, o, o);
+            // a picture shape wider than the screen: full width, bars above and below
+            float vh = shape > aspect ? aspect / shape : 1f;
+            Rect rect = new Rect(0.5f - o / 2f, 0.5f - o * vh / 2f, o, o * vh);
             bool fresh = seen.Add(camera.GetInstanceID());
             if (camera.rect != rect || fresh)
             {
@@ -62,6 +76,8 @@ namespace CupheadPort
                     UnityEngine.Debug.Log("[cupheadport] aspect: canvas scale set " + rescales + " times (camera " + camera.name +
                         " rect " + camera.rect + (fresh ? ", new camera)" : ")"));
                 camera.rect = rect;
+                // the 16:9 UI fits the screen's width (the canvases cover the screen, whatever the
+                // cameras' viewports): inside the picture with a shape too, which is as wide
                 float letterboxHeight = o * aspect / 1.7777778f;
                 foreach (UnityEngine.UI.CanvasScaler scaler in UnityEngine.Object.FindObjectsOfType<UnityEngine.UI.CanvasScaler>())
                     scaler.referenceResolution = new Vector2(1280f / letterboxHeight, 720f / letterboxHeight);

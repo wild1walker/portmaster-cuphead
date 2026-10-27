@@ -21,9 +21,10 @@ The setup asks for the texture quality, the resolution and, where the screen is 
 picture shape. Resolution: the device's (default), or 5/6, 3/4 or 1/2 of it, scaled up to the full
 screen (softer but faster); `ports/cuphead/resolution.txt` changes it later (`device`, or a share
 such as `0.75`). Shape: on 3:2 and 16:10 screens the picture fills the screen with the sides
-cropped a little (default) or keeps the game's 16:9 bars; on 4:3 screens it keeps the bars
-(default) or fills the screen with more of the sides cropped; `ports/cuphead/aspect.txt` changes it
-later (`fill`, `16:9` or `crop`).
+cropped a little (default) or keeps the game's 16:9 bars; on 4:3 and square screens it keeps the bars
+(default), shows a 4:3 picture (smaller bars, the sides cropped a little) or fills the screen with
+more of the sides cropped; `ports/cuphead/aspect.txt` changes it later (`fill`, `16:9`, `crop`, or a
+shape such as `4:3`).
 
 Saves: `ports/cuphead/data/` (64-bit build: `ports/cuphead/arm64/data/`).
 

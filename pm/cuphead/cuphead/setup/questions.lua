@@ -14,6 +14,7 @@ if not a then
   shape = {
     { "fill", "Fit the screen (recommended)" },
     { "16:9", "16:9 with bars" },
+    { "4:3", "4:3 on square and 4:3 screens: smaller bars, the sides cropped a little" },
     { "crop", "Fill any screen (crops the sides)" },
   }
 elseif a < 1.7 and a >= 1.45 then
@@ -26,6 +27,8 @@ elseif a < 1.45 then
     { "fill", "16:9 with bars (recommended)" },
     { "crop", "Fill the screen (crops the sides)" },
   }
+  -- (narrower than 4:3, e.g. square: a 4:3 picture between the two)
+  if a < 1.3 then table.insert(shape, 2, { "4:3", "4:3: smaller bars, the sides cropped a little" }) end
 end
 
 local questions = {
@@ -51,7 +54,7 @@ local questions = {
 if shape then
   table.insert(questions, 2, {
     id = "ASPECT",
-    question = "Picture shape? Cuphead is 16:9. (Change it later in ports/cuphead/aspect.txt: fill, 16:9 or crop.)",
+    question = "Picture shape? Cuphead is 16:9. (Change it later in ports/cuphead/aspect.txt: fill, 16:9, crop or a shape such as 4:3.)",
     options = shape,
   })
 end

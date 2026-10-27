@@ -64,10 +64,10 @@ if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
 fi
 
 # the picture shape the setup asked for (aspect.txt: "fill", "16:9" for the game's letterbox on any
-# screen, or "crop" to fill 4:3 screens too),
+# screen, "crop" to fill 4:3 screens too, or a shape such as "4:3" between the two),
 # and an optional smaller render size (resolution.txt: a share of the panel's, e.g. 0.75, which the
 # display engine scales up to the whole panel)
-A=$(cat "$GAMEDIR/aspect.txt" 2>/dev/null); case "$A" in 16:9|crop) export CUPHEAD_ASPECT="$A" ;; esac
+A=$(cat "$GAMEDIR/aspect.txt" 2>/dev/null); case "$A" in crop|[0-9]*:[0-9]*) export CUPHEAD_ASPECT="$A" ;; esac
 R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
 
 export SDL_AUDIODRIVER=alsa
