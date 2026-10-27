@@ -13,6 +13,10 @@ else
 fi
 
 source $controlfolder/control.txt
+# Unity's Android player for Cuphead is 32-bit: a firmware without 32-bit (armhf) libraries gets
+# the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them). The 32-bit build tells the
+# firmware's mod file so (PORT_32BIT: muOS then sets up its 32-bit sound)
+if [ "$CUPHEAD_ROUTE" = 64 ] || [ ! -e /lib/ld-linux-armhf.so.3 ]; then CUPHEAD_ROUTE=64; else export PORT_32BIT="Y"; fi
 [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
 get_controls
 
@@ -59,9 +63,7 @@ dlc_waiting() {   # dlc_waiting <built game folder>
 export UA_PAD_NAME="Xbox Wireless Controller"
 export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
 
-# Unity's Android player for Cuphead is 32-bit: a firmware without 32-bit (armhf) libraries gets
-# the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them)
-if [ "$CUPHEAD_ROUTE" = 64 ] || [ ! -e /lib/ld-linux-armhf.so.3 ]; then
+if [ "$CUPHEAD_ROUTE" = 64 ]; then
   source "$GAMEDIR/launch64.sh"
   exit
 fi
