@@ -17,11 +17,11 @@
         "inst_md": null,
         "genres": [
             "action",
-            "platform"
+            "platformer"
         ],
         "image": null,
         "rtr": false,
-        "exp": true,
+        "exp": false,
         "runtime": [
             "python_3.11.squashfs"
         ],
