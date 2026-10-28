@@ -92,7 +92,11 @@ fi
 
 [ -f "$GAMEDIR/.cuphead_ready" ] || run_setup "$GAMEDIR/setup/patchscript" "one to a few hours, once"
 if [ ! -f "$GAMEDIR/.cuphead_ready" ]; then
-  pm_message "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
+  if [ -f "$GAMEDIR/gamedata/.setup/.step_game" ]; then   # (the game's files are taken in: only the rest is left)
+    pm_message "The setup stopped before it finished (log: ports/cuphead/patchlog.txt). Launch Cuphead again: it continues where it stopped."
+  else
+    pm_message "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
+  fi
   sleep 8
   pm_finish
   exit 1
