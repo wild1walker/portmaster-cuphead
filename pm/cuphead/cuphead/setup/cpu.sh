@@ -1,7 +1,9 @@
 # The CPU while a setup runs (sourced by Cuphead.sh and the setups). The setup keeps every core busy
 # for hours, and some firmwares (muOS among them) run ports with a power-saving governor, a lower
 # top clock or cores switched off: cpu_fast gives the setup the whole CPU and cpu_restore puts back
-# what it changed; cpu_state is the line patchlog.txt gets at each step.
+# what it changed; cpu_state is the line patchlog.txt gets at each step. muOS also drops the CPU to
+# its idle governor (powersave: 288 MHz on an H700) after 2 minutes without a button press, setups
+# included: cpu_hold, running beside the setup, gives it the full speed again each time.
 CPU_SYS=${CPU_SYS:-/sys/devices/system/cpu}
 CPU_SAVED=()
 
@@ -23,6 +25,28 @@ cpu_fast() {
   for p in $(cpu_policies); do
     cpu_set "$p/scaling_max_freq" "$(cat "$p/cpuinfo_max_freq" 2>/dev/null)"
     cpu_set "$p/scaling_governor" performance
+  done
+}
+
+cpu_slowed() {   # true when something cpu_fast set has been changed since
+  local f p
+  for f in "$CPU_SYS"/cpu[0-9]*/online; do [ -f "$f" ] && [ "$(cat "$f")" = 0 ] && return 0; done
+  for p in $(cpu_policies); do
+    [ "$(cat "$p/scaling_governor" 2>/dev/null)" = performance ] || return 0
+    [ "$(cat "$p/scaling_max_freq" 2>/dev/null)" = "$(cat "$p/cpuinfo_max_freq" 2>/dev/null)" ] || return 0
+  done
+  return 1
+}
+
+cpu_hold() {   # cpu_hold <log>: (in the background while a setup runs) every 15 s, the full speed again
+  local n=0    # if the firmware lowered it; the CPU's state into <log> then and every 10 minutes
+  while sleep 15; do
+    n=$((n + 1))
+    if cpu_slowed; then
+      { echo "$(cpu_state) - lowered by the firmware: full speed again"; cpu_fast; } >> "$1"
+    elif [ $((n % 40)) = 0 ]; then
+      cpu_state >> "$1"
+    fi
   done
 }
 

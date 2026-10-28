@@ -55,11 +55,11 @@ run_setup() {   # run_setup <patchscript> <time> [no-questions]
   [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
   $ESUDO mount "$controlfolder/libs/${runtime}.squashfs" "$python_dir"
   export GAMEDIR DEVICE_ARCH controlfolder DISPLAY_WIDTH DISPLAY_HEIGHT   # (the questions read the screen size)
-  # the CPU at full speed while the setup runs (setup/cpu.sh), sampled every 10 minutes
+  # the CPU at full speed while the setup runs, kept there if the firmware lowers it (setup/cpu.sh)
   source "$GAMEDIR/setup/cpu.sh"
   { echo "== $(date '+%Y-%m-%d %H:%M:%S') $PORT_INFO: $(basename "$(dirname "$1")")/$(basename "$1")"
     cpu_state; cpu_fast; cpu_state; } >> "$GAMEDIR/patchlog.txt"
-  (while sleep 600; do cpu_state >> "$GAMEDIR/patchlog.txt"; done) &
+  cpu_hold "$GAMEDIR/patchlog.txt" &
   local sampler=$!
   export PATCHER_FILE="$1" PATCHER_GAME="Cuphead" PATCHER_TIME="$2"
   export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
