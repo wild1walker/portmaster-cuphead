@@ -59,7 +59,7 @@ Q=$(cat "$W/.texture_quality" 2>/dev/null); Q=${Q:-${TEXTURE_QUALITY:-fast}}
 echo "$Q" > "$W/.texture_quality"
 if [ ! -f "$W/.step_convert" ]; then
   step "converting the game, texture quality $Q (the long part)"
-  pm convert "$D" --config "$S/cuphead.json" --plugin "$S/animclips.py" --set textures.quality="$Q" --set textures.guide="$S/astc_guide.bin" \
+  pm convert "$D" --config "$S/cuphead.json" --plugin "$S/animclips.py" --set textures.quality="$Q" --set textures.guide="$S/astc_guide_$Q.bin" \
     || fail "Converting the game failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_convert"
 fi

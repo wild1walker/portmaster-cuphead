@@ -76,10 +76,16 @@ release's notes: they say whether the new release needs the setup to run again.
 
 The first time you start Cuphead, PortMaster shows a setup screen with the progress.
 
-1. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
+1. **It asks for the texture quality** (and, where it matters, the picture shape and resolution).
+   - **Fast (recommended):** the shorter setup.
+   - **Sharper:** textures closer to the original (the difference is hard to see on a small screen);
+     the setup takes about a fifth longer.
+
+   Your first answer is kept, also for the DLC added later.
+2. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
    unpacks Unity's Android player from the port's own files, converts the game's graphics, textures and
    settings for the handheld (the long part), and packs everything for the player.
-2. **When it is done, the game starts.** The setup then deletes your installers (or what is left
+3. **When it is done, the game starts.** The setup then deletes your installers (or what is left
    of `Cuphead.app`) from `gamedata/`, since the built game does not need them: about 5 GB back
    with the DLC.
 

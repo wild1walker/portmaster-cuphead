@@ -39,6 +39,14 @@ end
 
 local questions = {
   {
+    id = "TEXTURE_QUALITY",
+    question = "Texture quality? Both look the same at normal size. Sharper keeps the textures closer to the original and makes the setup about a fifth longer.",
+    options = {
+      { "fast", "Fast (recommended)" },
+      { "medium", "Sharper" },
+    },
+  },
+  {
     id = "RESOLUTION",
     question = "Resolution the game renders at? The screen shows it full size either way; lower is softer but faster. (Change it later in ports/cuphead/resolution.txt.)",
     options = {
@@ -50,7 +58,7 @@ local questions = {
   },
 }
 if shape then
-  table.insert(questions, 1, {
+  table.insert(questions, 2, {
     id = "ASPECT",
     question = "Picture shape? Cuphead is 16:9. (Change it later in ports/cuphead/aspect.txt: fill, 16:9, crop, 4:3 or 1:1.)",
     options = shape,
