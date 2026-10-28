@@ -28,12 +28,11 @@ cpu_fast() {
   done
 }
 
-cpu_slowed() {   # true when something cpu_fast set has been changed since
-  local f p
+cpu_slowed() {   # true when the governor or the cores cpu_fast set have been changed since (not the top
+  local f p     # clock: the kernel's thermal limit lowers that one while the CPU is hot, and keeps it so)
   for f in "$CPU_SYS"/cpu[0-9]*/online; do [ -f "$f" ] && [ "$(cat "$f")" = 0 ] && return 0; done
   for p in $(cpu_policies); do
     [ "$(cat "$p/scaling_governor" 2>/dev/null)" = performance ] || return 0
-    [ "$(cat "$p/scaling_max_freq" 2>/dev/null)" = "$(cat "$p/cpuinfo_max_freq" 2>/dev/null)" ] || return 0
   done
   return 1
 }
