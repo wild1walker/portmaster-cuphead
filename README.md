@@ -121,6 +121,11 @@ The buttons work **by position**, as on an Xbox controller: the **bottom face bu
 confirms** in menus. Below, each face button is named by its position and by the letter printed on
 Anbernic, Miyoo, Powkiddy and TrimUI handhelds (Nintendo layout).
 
+The setup asks for the **button layout**: **Xbox** (by position, as described here; the default) or
+**Nintendo** (by the letters printed on the buttons, as the game's Xbox prompts name them: **A
+jumps and confirms**, X shoots, B is the EX shot and back, Y dashes). Change it later in
+`ports/cuphead/buttons.txt` (`xbox` or `nintendo`).
+
 | Button | In the game | In menus |
 |---|---|---|
 | D-pad | move; aim while Lock is held | move the selection |

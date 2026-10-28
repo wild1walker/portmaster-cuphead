@@ -12,6 +12,7 @@ step() { echo "== $(date +%H:%M:%S) $*"; cpu_state; }   # (setup/cpu.sh: the CPU
 mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
 [ -n "$ASPECT" ] && echo "$ASPECT" > "$GAMEDIR/aspect.txt"                # (the launcher reads them)
 [ -n "$RESOLUTION" ] && echo "$RESOLUTION" > "$GAMEDIR/resolution.txt"
+[ -n "$BUTTONS" ] && echo "$BUTTONS" > "$GAMEDIR/buttons.txt"
 [ -n "$TEXTURE_QUALITY" ] && echo "$TEXTURE_QUALITY" > "$GAMEDIR/texture_quality.txt"   # (setup/dlcscript's too)
 export PYTHONPATH="$S/pylibs:$S" PYTHONDONTWRITEBYTECODE=1
 pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m pmunity "$@"); }

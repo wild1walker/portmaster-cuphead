@@ -56,6 +56,14 @@ local questions = {
       { "0.5", "1/2 of the device's" },
     },
   },
+  {
+    id = "BUTTONS",
+    question = "Button layout? Xbox: by position, the bottom button jumps. Nintendo: by label, the A button jumps. (Change it later in ports/cuphead/buttons.txt: xbox or nintendo.)",
+    options = {
+      { "xbox", "Xbox: by position (recommended)" },
+      { "nintendo", "Nintendo: by label" },
+    },
+  },
 }
 if shape then
   table.insert(questions, 2, {

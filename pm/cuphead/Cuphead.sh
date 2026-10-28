@@ -83,6 +83,9 @@ dlc_waiting() {   # dlc_waiting <built game folder>
 
 # the pad reaches the game as an Android gamepad; Rewired maps this name as a standard pad
 export UA_PAD_NAME="Xbox Wireless Controller"
+# the face buttons (buttons.txt, from the setup): "xbox" by position (the bottom one jumps), or
+# "nintendo" by their Nintendo labels (A jumps): the runtime swaps A/B and X/Y
+[ "$(cat "$GAMEDIR/buttons.txt" 2>/dev/null)" = nintendo ] && export UA_PAD_LAYOUT=nintendo
 export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
 
 if [ "$CUPHEAD_ROUTE" = 64 ]; then
