@@ -58,10 +58,10 @@ local questions = {
   },
   {
     id = "BUTTONS",
-    question = "Button layout? Xbox: by position, the bottom button jumps. Nintendo: by label, the A button jumps. (Change it later in ports/cuphead/buttons.txt: xbox or nintendo.)",
+    question = "Which letters are on your handheld's buttons? The game's prompts show them (the bottom button always jumps). (Change it later in ports/cuphead/buttons.txt: nintendo or xbox.)",
     options = {
-      { "xbox", "Xbox: by position (recommended)" },
-      { "nintendo", "Nintendo: by label" },
+      { "nintendo", "Nintendo: A on the right, B at the bottom (recommended)" },
+      { "xbox", "Xbox: A at the bottom, B on the right" },
     },
   },
 }

@@ -121,10 +121,9 @@ The buttons work **by position**, as on an Xbox controller: the **bottom face bu
 confirms** in menus. Below, each face button is named by its position and by the letter printed on
 Anbernic, Miyoo, Powkiddy and TrimUI handhelds (Nintendo layout).
 
-The setup asks for the **button layout**: **Xbox** (by position, as described here; the default) or
-**Nintendo** (by the letters printed on the buttons, as the game's Xbox prompts name them: **A
-jumps and confirms**, X shoots, B is the EX shot and back, Y dashes). Change it later in
-`ports/cuphead/buttons.txt` (`xbox` or `nintendo`).
+The setup asks which **letters are on your buttons**, so that the game's prompts show them:
+**Nintendo** (B at the bottom, A on the right; the default) or **Xbox** (A at the bottom). The
+buttons themselves never move. Change it later in `ports/cuphead/buttons.txt` (`nintendo` or `xbox`).
 
 | Button | In the game | In menus |
 |---|---|---|
@@ -143,7 +142,8 @@ These are Cuphead's own default controls; **Options > Controls** in the game cha
 **Button prompts.** The letters the game shows on screen are the ones printed on your handheld,
 in the Nintendo layout: **B** bottom, **A** right, **Y** left, **X** top, as on Anbernic, Miyoo,
 Powkiddy and TrimUI handhelds. So the prompts say B for jump and confirm. If your handheld has
-Xbox letters (A at the bottom), set `CUPHEAD_PROMPTS=xbox` (see [Options](#options)).
+Xbox letters (A at the bottom), answer Xbox to the setup's question, or put `xbox` in
+`ports/cuphead/buttons.txt` (or set `CUPHEAD_PROMPTS=xbox`, see [Options](#options)).
 
 Saves and settings are in `ports/cuphead/data/` (the 64-bit build: `ports/cuphead/arm64/data/`).
 
