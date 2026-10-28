@@ -45,7 +45,7 @@ fi
 # 2. conversion: the bundles' shaders, textures and audio, as the setup converted the game's
 if [ ! -f "$W/.step_convert" ]; then
   step "converting the DLC, texture quality $Q (the long part)"
-  pm convert "$D" --config "$S/cuphead.json" --steps shaders,textures,audio --set textures.quality="$Q" \
+  pm convert "$D" --config "$S/cuphead.json" --steps shaders,textures,audio --set textures.quality="$Q" --set textures.guide="$S/astc_guide.bin" \
     || fail "Converting the DLC failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_convert"
 fi

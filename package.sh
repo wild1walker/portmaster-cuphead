@@ -13,6 +13,11 @@
 #                  (pm/build_pylibs.sh <dir> builds them; default: built into the out dir from pm/cache)
 #   DONORS         the folder with the donor APKs (donor-2017.4.9f1-mono-armv7.apk, donor-2017.4.40f1-il2cpp-arm64.apk,
 #                  donor-2017.4.40f1-mono-armv7.apk: donor/ in portmaster-unity's tools, built by its build.sh)
+#   ASTC_GUIDE     the ASTC guide for Cuphead's textures (astc_guide.bin: each hard texture block's encoder
+#                  effort, chosen on a PC; no pixels in it), made from the game's data (with the DLC) by
+#                  `python -m pmunity astc-guide <Cuphead.app/Contents/Resources/Data> <file>
+#                  --config convert/cuphead.json --target fast` (portmaster-unity's convert/, guided_astc
+#                  built: convert/native/guided_astc/build.py). Without it the setup searches every hard block
 #   DOTNET         the .NET 8 SDK's dotnet (default: on PATH, else ~/.dotnet/dotnet)
 #   PMUNITY_MONO64_WORK  the work folder of portmaster-unity's tools/mono64 builds (Unity's Mono 2017.4 for
 #                  aarch64 and its 4.x class libraries, for the 64-bit build's Mono route; default
@@ -77,6 +82,7 @@ cp "$PM/runtime/host/out/ua_host" "$P/"
 cp "$PM/runtime/host/out/arm64/ua_host" "$P/ua_host64"
 S="$P/setup"
 cp "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
+if [ -n "${ASTC_GUIDE:-}" ]; then cp "$ASTC_GUIDE" "$S/astc_guide.bin"; else log "WARNING: no ASTC_GUIDE: the setup encodes without a guide (slower)"; fi
 cp -R "$PYL" "$S/pylibs"
 (cd "$PM/convert" && find pmunity \( -name '*.py' -o -name '*.shader' \) -not -path '*/__pycache__/*') | while read -r f; do
   mkdir -p "$S/$(dirname "$f")"; cp "$PM/convert/$f" "$S/$f"
