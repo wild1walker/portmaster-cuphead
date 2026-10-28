@@ -14,15 +14,29 @@ fi
 
 source $controlfolder/control.txt
 # Unity's Android player for Cuphead is 32-bit: a firmware without 32-bit (armhf) libraries gets
-# the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them). The 32-bit build tells the
-# firmware's mod file so (PORT_32BIT: muOS then sets up its 32-bit sound)
-if [ "$CUPHEAD_ROUTE" = 64 ] || [ ! -e /lib/ld-linux-armhf.so.3 ]; then CUPHEAD_ROUTE=64; else export PORT_32BIT="Y"; fi
+# the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them). A build that is set up, or a
+# setup under way, keeps its route (the libraries' check alone flipped between launches on muOS).
+# The 32-bit build tells the firmware's mod file so (PORT_32BIT: muOS then sets up its 32-bit sound)
+G="/$directory/ports/cuphead"
+ARMHF=no; [ -e /lib/ld-linux-armhf.so.3 ] && ARMHF=yes
+if [ "$CUPHEAD_ROUTE" = 64 ]; then ROUTE_WHY="CUPHEAD_ROUTE=64"
+elif [ -f "$G/.cuphead_ready" ] || [ -d "$G/gamedata/.setup" ]; then CUPHEAD_ROUTE=32; ROUTE_WHY="the 32-bit build is there"
+elif [ -f "$G/.cuphead_ready64" ] || [ -d "$G/gamedata/.setup64" ]; then CUPHEAD_ROUTE=64; ROUTE_WHY="the 64-bit build is there"
+elif [ "$ARMHF" = yes ]; then CUPHEAD_ROUTE=32; ROUTE_WHY="32-bit libraries found"
+else CUPHEAD_ROUTE=64; ROUTE_WHY="no 32-bit libraries"; fi
+[ "$CUPHEAD_ROUTE" = 32 ] && export PORT_32BIT="Y"
 [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
 get_controls
 
 GAMEDIR="/$directory/ports/cuphead"
 cd "$GAMEDIR"
 > "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+PORT_INFO="Cuphead port $(cat "$GAMEDIR/version.txt" 2>/dev/null || echo unknown); $CFW_NAME on $DEVICE_NAME, $DISPLAY_WIDTH x $DISPLAY_HEIGHT; $CUPHEAD_ROUTE-bit build ($ROUTE_WHY; 32-bit libraries: $ARMHF)"
+echo "$PORT_INFO"
+if [ "$CUPHEAD_ROUTE" = 32 ] && [ "$ARMHF" = no ]; then
+  pm_message "The 32-bit build is set up, but this firmware's 32-bit libraries are missing right now (/lib/ld-linux-armhf.so.3). Restart the handheld and launch again; please send ports/cuphead/log.txt if it stays."
+  sleep 8
+fi
 
 # first launch: the setup builds the game from the player's copy in gamedata/, with PortMaster's
 # Python runtime (setup/pylibs: the extra packages it needs)
@@ -41,6 +55,7 @@ run_setup() {   # run_setup <patchscript> <time> [no-questions]
   [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
   $ESUDO mount "$controlfolder/libs/${runtime}.squashfs" "$python_dir"
   export GAMEDIR DEVICE_ARCH controlfolder DISPLAY_WIDTH DISPLAY_HEIGHT   # (the questions read the screen size)
+  echo "== $(date '+%Y-%m-%d %H:%M:%S') $PORT_INFO: $(basename "$(dirname "$1")")/$(basename "$1")" >> "$GAMEDIR/patchlog.txt"
   export PATCHER_FILE="$1" PATCHER_GAME="Cuphead" PATCHER_TIME="$2"
   export PATCHER_QUESTIONS="$GAMEDIR/setup/questions.lua"
   [ -n "$3" ] && unset PATCHER_QUESTIONS

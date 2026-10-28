@@ -72,6 +72,7 @@ P="$Z/cuphead"; cp -R "$R/cuphead" "$P"
 # what PortMaster's release build adds to the port folder
 cp "$R/port.json" "$R/gameinfo.xml" "$R/screenshot.jpg" "$R/cover.jpg" "$P/"
 cp "$R/README.md" "$P/cuphead.md"
+echo "${RELEASE:-dev $(git -C "$HERE" rev-parse --short HEAD)}" > "$P/version.txt"   # (the logs name it)
 cp "$PM/runtime/host/out/ua_host" "$P/"
 cp "$PM/runtime/host/out/arm64/ua_host" "$P/ua_host64"
 S="$P/setup"
