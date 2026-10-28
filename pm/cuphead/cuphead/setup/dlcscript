@@ -11,7 +11,8 @@ B="$D/StreamingAssets/AssetBundles"
 
 exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1
 fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
-step() { echo "== $(date +%H:%M:%S) $*"; }
+. "$S/cpu.sh"
+step() { echo "== $(date +%H:%M:%S) $*"; cpu_state; }   # (setup/cpu.sh: the CPU at each step)
 mkdir -p "$B" || fail "Cannot write to ports/cuphead/gamedata."
 export PYTHONPATH="$S/pylibs:$S" PYTHONDONTWRITEBYTECODE=1
 pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m pmunity "$@"); }

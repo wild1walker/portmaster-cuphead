@@ -7,7 +7,8 @@ GD="$GAMEDIR/gamedata"; D="$GD/Cuphead_Data"; S="$GAMEDIR/setup"; W="$GD/.setup"
 
 exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1
 fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
-step() { echo "== $(date +%H:%M:%S) $*"; }
+. "$S/cpu.sh"
+step() { echo "== $(date +%H:%M:%S) $*"; cpu_state; }   # (setup/cpu.sh: the CPU at each step)
 mkdir -p "$W" || fail "Cannot write to ports/cuphead/gamedata."
 [ -n "$ASPECT" ] && echo "$ASPECT" > "$GAMEDIR/aspect.txt"                # (the launcher reads them)
 [ -n "$RESOLUTION" ] && echo "$RESOLUTION" > "$GAMEDIR/resolution.txt"
