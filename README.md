@@ -36,11 +36,11 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 | | |
 |---|---|
 | **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. A 64-bit ARM firmware without them gets the [64-bit build](#64-bit-only-handhelds). |
-| **Tested on** | Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480 screen) with Knulli. Other handhelds and firmwares have not been tried yet. ROCKNIX: unknown. The 64-bit build's whole setup (compiling on the handheld) has run on the same handheld, then the title screen at 59.6 fps. |
+| **Tested on** | Players have run it on Knulli, muOS, dArkOS and ROCKNIX (libmali and Adreno); developed on an Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480) with Knulli, where the 64-bit build has run too. |
 | **The game** | Cuphead for **macOS** from **GOG**, version 1.3.4, with or without the DLC. Either GOG's macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. |
 | **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG gives you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
 | **Free space** | About 10 GB free on the card while the setup runs (the 64-bit build: about 12 GB). About 2.5 GB stay used afterwards. |
-| **Wi-Fi** | On the first launch only, to download Unity's Android player from Unity (about 190 MB). No Wi-Fi? See step 4 below. |
+| **Wi-Fi** | Not needed: the port carries Unity's Android player (in small games of its own built with Unity). |
 | **Time** | The first launch takes about 1 to 3 hours, once (the 64-bit build: several hours more). Every launch after that starts the game straight away. |
 
 ## Install
@@ -63,10 +63,7 @@ network). On other firmwares use the `ports` folder PortMaster installs its port
    ```
 3. **Copy your game into `ports/cuphead/gamedata/`.** Either the GOG macOS installers (the `.pkg`
    files, the game's and the DLC's) or the whole `Cuphead.app` folder, as it is.
-4. **No Wi-Fi on the handheld?** Download `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe`
-   from Unity's download archive on a computer and put it into `ports/cuphead/gamedata/` too. The
-   setup then uses that file instead of downloading it.
-5. **Start Cuphead from the Ports menu.** If it does not show up, refresh your game list or restart
+4. **Start Cuphead from the Ports menu.** If it does not show up, refresh your game list or restart
    the handheld. The first start runs the setup (next section).
 
 To remove the port, delete `ports/Cuphead.sh` and the `ports/cuphead/` folder. Your saves are in
@@ -79,16 +76,10 @@ release's notes: they say whether the new release needs the setup to run again.
 
 The first time you start Cuphead, PortMaster shows a setup screen with the progress.
 
-1. **It asks for the texture quality.**
-   - **Medium (recommended):** what the port is tested with.
-   - **Fast:** the setup takes about an hour less, and the textures are slightly less exact (hard to
-     see on a small screen).
-
-   Your first answer is kept, even if the setup is interrupted.
-2. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
-   downloads and unpacks Unity's Android player, converts the game's graphics, textures and
+1. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
+   unpacks Unity's Android player from the port's own files, converts the game's graphics, textures and
    settings for the handheld (the long part), and packs everything for the player.
-3. **When it is done, the game starts.** The setup then deletes your installers (or what is left
+2. **When it is done, the game starts.** The setup then deletes your installers (or what is left
    of `Cuphead.app`) from `gamedata/`, since the built game does not need them: about 5 GB back
    with the DLC.
 
@@ -105,36 +96,18 @@ You can also do this conversion on a computer in minutes instead of hours: see
 ## 64-bit-only handhelds
 
 Some firmwares have no 32-bit ARM libraries at all (the port's launcher sees that by itself). Unity
-made a 64-bit Android player only for game code that is compiled ahead of time (IL2CPP), and only
-from a later release of Cuphead's Unity line (2017.4.40f1 instead of the game's 2017.4.9f1). On
-such a handheld the port therefore builds a **64-bit version**: the same game, the same data and
-the same patches, with the game's code compiled for Unity's 64-bit player.
+made a 64-bit Android player only from a later release of Cuphead's Unity line (2017.4.40f1 instead
+of the game's 2017.4.9f1), so on such a handheld the port builds a **64-bit version**: the same game,
+data and patches, run on Unity's 64-bit player with Unity's Mono for 64-bit ARM, which the port
+carries.
 
 - **Install it the same way** (unzip `cuphead.zip`, copy your game into `gamedata/`, start Cuphead).
-  The setup asks the same question and does the same steps, plus one: it **compiles the game's
-  code on the handheld**.
-- **It takes longer:** several hours more than the 32-bit setup on a small handheld. It can be
-  interrupted and continues where it stopped, as the 32-bit setup does.
-- **It needs about 12 GB free** on the card during the setup, and Wi-Fi: it downloads about 7 MB of
-  Unity's 2017.4.40f1 player (or reads `UnitySetup-Android-Support-for-Editor-2017.4.40f1.exe` from
-  `gamedata/`) and the tools that compile the code (Unity's IL2CPP, parts of Google's Android NDK,
-  a compiler).
-- **Handhelds too weak to compile it** (too little memory, or the setup says it cannot): build the
-  64-bit version on a computer with `build64.sh` instead (much faster there), and copy the result
-  to the handheld ([docs/building.md](docs/building.md)).
+  The setup asks the same questions and takes about as long as the 32-bit one. No Wi-Fi needed.
+- **It needs about 12 GB free** on the card during the setup.
 - **Its files are its own,** so a card moved between a 32-bit and a 64-bit-only handheld keeps both
   builds apart: everything of the 64-bit build is in `ports/cuphead/arm64/` (saves:
   `ports/cuphead/arm64/data/`). When the card already has the 32-bit build's saves, the 64-bit setup
-  copies them once. Each build needs its own setup on a card: if the setup's tools were removed by
-  the other build's setup, it says so; install `cuphead.zip` again and copy your game in again.
-- **Status:** new. The whole 64-bit setup has run on an RG34XX-SP (made to take the 64-bit path,
-  from GOG's installers with the DLC, texture quality Medium): converting about 2 h 40 min,
-  compiling the game's code on the handheld about 1 h, packing 20 min; then the title screen at
-  59.6 fps, using about 420 MB of memory. Two setup bugs it found are fixed for the next release
-  (a proxy was ignored; after a failed small download, the IL2CPP step looked for the deleted
-  whole installer). It also ran earlier on a stand-in for a 64-bit-only handheld (a 64-bit ARM Linux container with 1 GB of memory and no 32-bit libraries):
-  it compiled the game's code there and installed the game, which then reached its main menu.
-  On a small handheld the compiling step takes hours.
+  copies them once. A handheld keeps using the build it has set up.
 
 ## Controls
 
@@ -202,13 +175,10 @@ More options for testing and measuring: [docs/technical.md](docs/technical.md#op
 - **Rumble** plays as short pulses by default. With an earlier version of this port, the
   RG34XX-SP's motor did not stop when the game asked it to; this has not been checked again with
   the current port, so the short pulses stay the default.
-- **The first launch is long** (1 to 3 hours) and needs Wi-Fi, or the Unity file from step 4.
-- **Only GOG's macOS version** has been tested. The Windows version does not work.
-- **Other handhelds:** only the RG34XX-SP with Knulli has been tested. If you try another one,
-  please report how it went.
-- **The 64-bit build** (handhelds without 32-bit libraries) has not been played on a handheld yet:
-  its setup and the game have only run on a stand-in for one. Its setup takes several hours more
-  than the 32-bit one (compiling the game's code); `build64.sh` on a computer is much faster.
+- **The first launch is long** (about 1 to 3 hours, once).
+- **The macOS version only** (GOG's or Steam's). The Windows version does not work.
+- **Firmwares tested by players:** Knulli, muOS, dArkOS, ROCKNIX (libmali and Adreno). Not tried yet:
+  AmberELEC, ROCKNIX with Panfrost. If you try another one, please report how it went.
 
 ## If the setup stops
 
@@ -220,10 +190,7 @@ PortMaster shows the setup's message. The most common ones:
 | "These are the Windows installers" | Download the macOS installers from GOG instead. |
 | "This Cuphead version is not supported" | The setup needs the build of version 1.3.4 (Unity 2017.4.9f1), as GOG's macOS installers have it. |
 | "Unpacking the installers needs about 9 GB free on the card" | Make space on the card, then start Cuphead again. |
-| "Downloading Unity's player failed: is Wi-Fi on?" | Turn on Wi-Fi, or put the Unity file from step 4 into `gamedata/`. |
 | "PortMaster's 7-Zip is missing: update PortMaster." | Update PortMaster, then start Cuphead again. |
-| "This release cannot compile Cuphead's code on the handheld yet" (64-bit build) | Build the 64-bit version on a computer with `build64.sh` ([docs/building.md](docs/building.md)). |
-| "Compiling the game's code failed" (64-bit build) | Start Cuphead again: it continues where it stopped. If it fails again, build the 64-bit version on a computer instead, and [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |
 | "Unpacking the installers and building the 64-bit version need about 12 GB free" | Make space on the card, then start Cuphead again. |
 | "The setup's tools (ports/cuphead/setup/) are gone" | The other build's setup removed them: install `cuphead.zip` again, copy your game into `gamedata/` again, start Cuphead. |
 | Any other message | Start Cuphead again (the setup continues where it stopped). If it stops again, [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |

@@ -35,7 +35,7 @@
     "keep_max": 64,
     "min_side": 16,
     "min_convert": 4,
-    "quality": "medium",
+    "quality": "fast",
     "mips": "drop",
     "inline": false,
     "files": "^StreamingAssets/AssetBundles/(atlas_|tex_)|^[^/]*\\.assets$"

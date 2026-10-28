@@ -39,14 +39,6 @@ end
 
 local questions = {
   {
-    id = "TEXTURE_QUALITY",
-    question = "Texture quality? Medium is what this port is tested with. Fast makes the setup about an hour shorter, with slightly less exact textures.",
-    options = {
-      { "medium", "Medium (recommended)" },
-      { "fast", "Fast (shorter setup)" },
-    },
-  },
-  {
     id = "RESOLUTION",
     question = "Resolution the game renders at? The screen shows it full size either way; lower is softer but faster. (Change it later in ports/cuphead/resolution.txt.)",
     options = {
@@ -58,7 +50,7 @@ local questions = {
   },
 }
 if shape then
-  table.insert(questions, 2, {
+  table.insert(questions, 1, {
     id = "ASPECT",
     question = "Picture shape? Cuphead is 16:9. (Change it later in ports/cuphead/aspect.txt: fill, 16:9, crop, 4:3 or 1:1.)",
     options = shape,

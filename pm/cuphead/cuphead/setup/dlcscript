@@ -6,7 +6,7 @@
 # Unity's player reads beside the main one, and the game's DLC check is switched on (cuphead_dlc,
 # GOG's .info file). The built game is not touched. Each step is marked done.
 GD="$GAMEDIR/gamedata"; S="$GAMEDIR/setup"; T="${DLC_TARGET:-$GAMEDIR}"; W="$GD/.dlc"; D="$W/Data"
-Q=$(cat "$GAMEDIR/texture_quality.txt" 2>/dev/null); Q=${Q:-medium}           # (the game's own setup's)
+Q=$(cat "$GAMEDIR/texture_quality.txt" 2>/dev/null); Q=${Q:-fast}           # (the game's own setup's)
 B="$D/StreamingAssets/AssetBundles"
 
 exec > >(tee -a "$GAMEDIR/patchlog.txt") 2>&1

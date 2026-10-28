@@ -91,7 +91,7 @@ if [ ! -f "$W/.step_player" ]; then
 fi
 
 # 3. conversion (as the 32-bit setup)
-Q=$(cat "$W/.texture_quality" 2>/dev/null); Q=${Q:-${TEXTURE_QUALITY:-medium}}
+Q=$(cat "$W/.texture_quality" 2>/dev/null); Q=${Q:-${TEXTURE_QUALITY:-fast}}
 echo "$Q" > "$W/.texture_quality"
 if [ ! -f "$W/.step_convert" ]; then
   step "converting the game, texture quality $Q"
