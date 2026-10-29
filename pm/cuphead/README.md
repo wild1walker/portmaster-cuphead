@@ -2,7 +2,7 @@
 
 Requires **Cuphead for macOS, version 1.3.4, from GOG or Steam**, with or without The Delicious Last
 Course. The Windows version does not work (its shaders are Direct3D only). On Steam without a Mac,
-the macOS version downloads from Steam's console (`steam://open/console`): `download_depot 268910 268912`, and the DLC with `download_depot 268910 1117851` (copy its files into the game's `Cuphead.app`).
+the macOS version downloads from Steam's console (`steam://open/console`): `download_depot 268910 268912`, and the DLC with `download_depot 268910 1117851`; put both downloaded folders (`depot_268912`, `depot_1117851`) into `gamedata/`.
 
 Copy GOG's macOS installers (`.pkg`) or the installed `Cuphead.app` (GOG or Steam) into
 `ports/cuphead/gamedata/` and start Cuphead. The first launch builds the game on the handheld (one

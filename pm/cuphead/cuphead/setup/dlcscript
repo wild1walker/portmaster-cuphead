@@ -34,6 +34,8 @@ if [ ! -f "$W/.step_files" ]; then
     INFO=$(ls "$APP"/Contents/Resources/goggame-2048763853.info 2>/dev/null)
   fi
   [ -d "$SRC" ] || fail "No DLC files found: put GOG's DLC installer (.pkg) or a Cuphead.app with the DLC in ports/cuphead/gamedata."
+  pm patch-obb check "$S/dlc_bundles.txt" "$SRC" --game "$T" || { [ $? = 3 ] && fail "The DLC's files in gamedata/ are incomplete (a download or copy that stopped early): copy them again (see patchlog.txt)."
+    fail "Could not check the DLC's files (see patchlog.txt)."; }
   pm patch-obb new "$SRC" "$T" > "$W/new.txt" || fail "Could not read the built game (see patchlog.txt)."
   grep -q _dlc "$W/new.txt" || fail "These files hold no DLC the game does not have already."
   step "the DLC: $(wc -l < "$W/new.txt") new bundles"

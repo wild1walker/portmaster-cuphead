@@ -27,7 +27,8 @@ pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$L
 # 1. the game's data, from Cuphead.app or the installers (largest first: the game, then the DLC)
 if [ ! -f "$W/.step_game" ]; then
   if [ ! -f "$D/globalgamemanagers" ]; then
-    APP=$(ls -d "$GD"/Cuphead.app "$GD"/*/Cuphead.app 2>/dev/null | head -1)
+    # the game's Cuphead.app (Steam: depot_268912/; the DLC's depot, depot_1117851/, has only its bundles)
+    APP=; for a in "$GD"/Cuphead.app "$GD"/*/Cuphead.app; do [ -f "$a/Contents/Resources/Data/globalgamemanagers" ] && APP=$a && break; done
     PKGS=$(ls -S "$GD"/*.pkg 2>/dev/null)
     if [ -z "$APP" ] && [ -n "$PKGS" ]; then
       [ "$(df -m "$GD" | awk 'NR==2{print $4}')" -gt 12000 ] || fail "The 64-bit setup needs about 12 GB free on the card."
@@ -40,6 +41,16 @@ if [ ! -f "$W/.step_game" ]; then
     [ -n "$APP" ] || fail "Put Cuphead.app (macOS, from GOG or Steam) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata."
     grep -aqs "2017.4.9f1" "$APP/Contents/Resources/Data/globalgamemanagers" \
       || fail "This Cuphead version is not supported (the port needs the macOS build 1.3.4, GOG's or Steam's)."
+    # a copy that stopped early (GOG's installers are checked as they unpack), then Steam's DLC depot
+    # (depot_1117851/Cuphead.app beside the game's) merged into the game's bundles
+    AB=Contents/Resources/Data/StreamingAssets/AssetBundles; ABS=("$APP/$AB")
+    for a in "$GD"/Cuphead.app "$GD"/*/Cuphead.app; do [ "$a" != "$APP" ] && [ -d "$a/$AB" ] && ABS+=("$a/$AB"); done
+    pm patch-obb check "$S/dlc_bundles.txt" "${ABS[@]}" || { [ $? = 3 ] && fail "The game's files in gamedata/ are incomplete (a download or copy that stopped early): copy them again (see patchlog.txt)."
+      fail "Could not check the game's files (see patchlog.txt)."; }
+    for d in "${ABS[@]:1}"; do
+      mv -f "$d"/* "$APP/$AB/" || fail "Could not move the DLC's files."
+      a=${d%/$AB}; rm -rf "$a"; rmdir "$(dirname "$a")" 2>/dev/null
+    done
     cp "$APP/Contents/Resources/"goggame-*.info "$W/" 2>/dev/null   # (the DLC check reads them)
     mv "$APP/Contents/Resources/Data" "$D" || fail "Could not move the game's data."
     # (Steam's DLC check, which the code patch replaces: the DLC's bundles are in the data)
