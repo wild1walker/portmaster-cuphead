@@ -61,14 +61,6 @@ for a in armhf arm64; do
 done
 PYL=${PYLIBS:-$B/pylibs}
 [ -d "$PYL/UnityPy" ] && [ -f "$PYL"/guided_astc.abi3.so ] || { log "setup's Python packages"; GUIDED_ASTC="$PM/convert/native/guided_astc" "$HERE/pm/build_pylibs.sh" "$PYL"; }
-# OpenSSL 1.1 for the 64-bit setup's downloads (PortMaster's Python links it; most firmwares have 3)
-DEB="$HERE/pm/cache/libssl1.1_1.1.1w-0+deb11u1_arm64.deb"
-[ -f "$DEB" ] || curl -fL -o "$DEB" "https://deb.debian.org/debian/pool/main/o/openssl/$(basename "$DEB")"
-[ "$(shasum -a 256 "$DEB" | cut -d' ' -f1)" = fe7a7d313c87e46e62e614a07137e4a476a79fc9e5aab7b23e8235211280fee3 ] \
-  || { echo "$DEB: checksum mismatch" >&2; exit 1; }
-T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
-(cd "$T" && ar x "$DEB" data.tar.xz && tar -xJf data.tar.xz ./usr/lib/aarch64-linux-gnu/libssl.so.1.1 \
-   ./usr/lib/aarch64-linux-gnu/libcrypto.so.1.1 ./usr/share/doc/libssl1.1/copyright)
 
 log "assembling"
 Z="$OUT/zip"; rm -rf "$Z"; mkdir -p "$Z"
@@ -87,14 +79,15 @@ for q in fast medium; do
   if [ -f "${ASTC_GUIDES:-/nonexistent}/astc_guide_$q.bin" ]; then cp "$ASTC_GUIDES/astc_guide_$q.bin" "$S/"
   else log "WARNING: no astc_guide_$q.bin in ASTC_GUIDES: the setup encodes $q textures without a guide (slower)"; fi
 done
-cp -R "$PYL" "$S/pylibs"
-(cd "$PM/convert" && find pmunity \( -name '*.py' -o -name '*.shader' \) -not -path '*/__pycache__/*') | while read -r f; do
+# (etcpak: UnityPy's BC encoder, which the setup never uses: it encodes ASTC itself)
+rsync -a --exclude 'etcpak*' "$PYL/" "$S/pylibs/"
+# the converter's modules the setup can import (pm/setup_modules.py), and its shader files
+{ python3 "$HERE/pm/setup_modules.py" "$PM/convert" "$HERE/convert/animclips.py"
+  (cd "$PM/convert" && find pmunity -name '*.shader'); } | while read -r f; do
   mkdir -p "$S/$(dirname "$f")"; cp "$PM/convert/$f" "$S/$f"
 done
 S64="$P/setup64"
-cp -R "$PM/tools/il2cpp" "$S64/il2cpp"                    # (the converter's IL2CPP step's scripts)
-cp "$HERE/il2cpp/link.xml" "$HERE/convert/plugins-il2cpp.json" "$S64/"
-mkdir -p "$S64/lib"; cp "$T"/usr/lib/aarch64-linux-gnu/lib*.so.1.1 "$S64/lib/"
+mkdir -p "$S64"; cp "$HERE/convert/plugins-il2cpp.json" "$S64/"
 M="$S64/mono64"; mkdir -p "$M/classlibs"
 cp "$PM/runtime/mono64/out/arm64/libil2cpp_mono.so" "$M/libil2cpp.so"
 cp "$MO/libmonobdwgc-2.0.so" "$MO/libMonoPosixHelper.so" "$M/"
@@ -107,8 +100,8 @@ find "$Z" -name '*.sh' -exec chmod 644 {} +            # (the launcher sets the 
 L="$P/licenses"; mkdir -p "$L"
 cp "$HERE/LICENSE" "$L/LICENSE.portmaster-cuphead.txt"
 cat > "$L/LICENSE.unity-donor.txt" <<'TXT'
-donor/*.apk: small games built with Unity (Unity Personal) for this port: one empty scene, no
-scripts or assets of their own. Each carries Unity's Android player of its Unity version (the
+donor/*.apk: small games built with Unity (Unity Personal) for this port: a game of pong (one
+scene, one script; portmaster-unity's tools/donor). Each carries Unity's Android player of its Unity version (the
 Unity runtime), which the setup uses to run the player's own copy of Cuphead. The Unity runtime
 is Unity Technologies' software, distributed as part of these Made-with-Unity applications under
 Unity's terms of service: https://unity.com/legal/terms-of-service
@@ -147,13 +140,12 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 TXT
-for d in "$PYL"/*.dist-info; do                            # the setup's Python packages
+for d in "$S"/pylibs/*.dist-info; do                       # the setup's Python packages
   n=$(sed -n 's/^Name: //p' "$d/METADATA" | head -1 | tr 'A-Z_' 'a-z-')
   [ "$n" = guided-astc ] && continue                       # (portmaster-unity's: LICENSE.portmaster-unity.txt)
   for f in "$d"/LICEN[CS]E* "$d"/licenses/* "$d"/COPYING*; do [ -f "$f" ] && cat "$f" && printf '\n'; done > "$L/LICENSE.$n.txt"
   [ -s "$L/LICENSE.$n.txt" ] || { echo "$d: no licence file" >&2; exit 1; }
 done
-cp "$T/usr/share/doc/libssl1.1/copyright" "$L/LICENSE.openssl.txt"
 MS="$M64W/src/unity-2017.4-mbe"                            # the 64-bit build's Mono route
 { echo "Unity's fork of Mono, branch unity-2017.4-mbe ($(cat "$MO/SOURCE.txt")): setup64/mono64/libmonobdwgc-2.0.so, libMonoPosixHelper.so"
   echo; cat "$MS/LICENSE"; printf '\n\n'; cat "$MS/PATENTS.TXT"; } > "$L/LICENSE.mono.txt"

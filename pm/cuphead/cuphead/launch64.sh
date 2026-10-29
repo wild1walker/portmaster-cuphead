@@ -1,12 +1,10 @@
 # Cuphead's 64-bit build, sourced by Cuphead.sh on a firmware without 32-bit support. Unity has no
 # 64-bit Android player for Cuphead's Unity version and its 64-bit players are IL2CPP ones: the
 # game's code runs on Unity 2017.4.40f1's 64-bit player through Unity's Mono for aarch64, which the
-# port ships (the Mono route; with CUPHEAD_64_IL2CPP=1 the setup compiles the code with IL2CPP
-# instead). Its files are its own: setup64/, .cuphead_ready64 and arm64/ (the player, the game, the
-# saves in arm64/data/).
+# port ships. Its files are its own: setup64/, .cuphead_ready64 and arm64/ (the player, the game,
+# the saves in arm64/data/).
 
-T="one to a few hours, once"; [ "${CUPHEAD_64_IL2CPP:-0}" = 1 ] && T="several hours, once"
-[ -f "$GAMEDIR/.cuphead_ready64" ] || run_setup "$GAMEDIR/setup64/patchscript" "$T"
+[ -f "$GAMEDIR/.cuphead_ready64" ] || run_setup "$GAMEDIR/setup64/patchscript" "one to a few hours, once"
 if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
   if [ -f "$GAMEDIR/gamedata/.setup64/.step_game" ]; then   # (the game's files are taken in: only the rest is left)
     pm_message "The setup stopped before it finished (log: ports/cuphead/patchlog.txt). Launch Cuphead again: it continues where it stopped."
@@ -26,9 +24,6 @@ dlc_waiting "$GAMEDIR/arm64" && export DLC_TARGET="$GAMEDIR/arm64" && run_setup 
 A=$(cat "$GAMEDIR/aspect.txt" 2>/dev/null); case "$A" in crop|[0-9]*:[0-9]*) export CUPHEAD_ASPECT="$A" ;; esac
 R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
 
-# the helper's code warm-up is for Mono's JIT (the Mono route: on, as in the 32-bit build); IL2CPP's
-# code is compiled already
-[ -f "$GAMEDIR/arm64/lib/libmonobdwgc-2.0.so" ] || export CUPHEAD_CODEWARM=0
 $ESUDO chmod +x "$GAMEDIR/ua_host64"
 $GPTOKEYB "ua_host64" -c "$GAMEDIR/cuphead_hotkey.gptk" &
 pm_platform_helper "$GAMEDIR/ua_host64"
