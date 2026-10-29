@@ -1,9 +1,9 @@
 # The conversion run again when the kernel kills it (sourced by the setups, after their pm()). On a
-# 1 GB handheld without swap the converter's process can grow over its hours of work until the
-# kernel kills it for memory (an RG351MP: twice in the textures, each time on a file a new launch
-# then converted at once). Every step of `pmunity convert` journals each file it finishes
-# (<data>/.pmunity.json), so a new process continues after the last one, with the whole memory
-# again: pm_convert starts one by itself while the killed runs keep finishing files.
+# 1 GB handheld without swap the converter's biggest textures can need more memory than is free
+# beside the firmware, and the kernel kills it (an RG351MP: twice in the textures, each time on a
+# file a new launch then converted at once). Every step of `pmunity convert` journals each file it
+# finishes (<data>/.pmunity.json), so a new process continues after the last one: pm_convert
+# starts one by itself while the killed runs keep finishing files.
 
 pm_convert() {   # pm_convert <data folder> <pmunity convert args>
   local j="$1/.pmunity.json" n rc
