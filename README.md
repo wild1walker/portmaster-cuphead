@@ -93,6 +93,8 @@ Good to know:
 
 - **You can stop it.** If the battery runs out or you press the power button, just start Cuphead
   again: the setup continues where it stopped.
+- **On 1 GB handhelds the conversion can run out of memory.** It then starts again by itself where
+  it stopped (`patchlog.txt` says so); you do not need to do anything.
 - **Keep the handheld plugged in** if you can: it is a long job for a small battery.
 - **The setup's log** is `ports/cuphead/patchlog.txt`. If something goes wrong, that file says why.
 

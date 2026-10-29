@@ -48,7 +48,10 @@ On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's p
    `.cuphead_ready` marks the setup done.
 
 Every step leaves a marker in `gamedata/.setup/`, so an interrupted setup continues where it
-stopped. Log: `ports/cuphead/patchlog.txt`.
+stopped. A conversion the kernel kills (out of memory on a 1 GB handheld: the converter's process
+can grow over its hours of work) starts again by itself in a new process, which continues after the
+last file the journal lists, for as long as each run finishes a file (`setup/resume.sh`). Log:
+`ports/cuphead/patchlog.txt`.
 
 At every launch `Cuphead.sh` presents the built-in pad to the game as an Android gamepad named
 `Xbox Wireless Controller` (`UA_PAD_NAME`; Rewired knows Android pads by name), uses ALSA for
