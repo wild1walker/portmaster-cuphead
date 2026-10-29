@@ -98,6 +98,22 @@ Good to know:
 - **Keep the handheld plugged in** if you can: it is a long job for a small battery.
 - **The setup's log** is `ports/cuphead/patchlog.txt`. If something goes wrong, that file says why.
 
+## Adding The Delicious Last Course later
+
+Already set up Cuphead without the DLC? You do not need to start over or set the game up again:
+
+1. **Put the DLC into `ports/cuphead/gamedata/`:**
+   - **GOG:** the DLC's macOS installer (the `.pkg` file whose name starts with
+     `dlc_cuphead___the_delicious_last_course`).
+   - **Steam:** download the DLC from Steam's console (`steam://open/console`):
+     `download_depot 268910 1117851`, and copy the whole downloaded `depot_1117851` folder into
+     `gamedata/`. (A `Cuphead.app` that already has the DLC works too.)
+2. **Start Cuphead.** It finds the DLC by itself and adds it to your game: about half an hour, once,
+   with no questions (it uses your first answers). Then the game starts with the DLC, and the DLC's
+   installer is deleted from `gamedata/`.
+
+Your saves are kept.
+
 You can also do this conversion on a computer in minutes instead of hours: see
 [docs/building.md](docs/building.md).
 
