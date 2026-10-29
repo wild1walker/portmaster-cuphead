@@ -33,7 +33,8 @@ if [ ! -f "$W/.step_game" ]; then
       [ "$(df -m "$GD" | awk 'NR==2{print $4}')" -gt 12000 ] || fail "The 64-bit setup needs about 12 GB free on the card."
       step "unpacking GOG's installers"
       rm -rf "$W/pkgroot"
-      pm macpkg "$W/pkgroot" $PKGS || fail "Could not unpack the installers (see patchlog.txt)."
+      pm macpkg "$W/pkgroot" $PKGS || { [ $? = 3 ] && fail "An installer in gamedata/ is incomplete (a download or copy that stopped early): copy it again (see patchlog.txt)."
+        fail "Could not unpack the installers (see patchlog.txt)."; }
       APP=$(find "$W/pkgroot" -maxdepth 4 -type d -name 'Cuphead.app' | head -1)
     fi
     [ -n "$APP" ] || fail "Put Cuphead.app (macOS, from GOG or Steam) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata."

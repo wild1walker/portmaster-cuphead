@@ -25,7 +25,8 @@ if [ ! -f "$W/.step_files" ]; then
   if [ -n "$PKG" ]; then
     step "unpacking the DLC's installer"
     rm -rf "$W/pkgroot"
-    pm macpkg "$W/pkgroot" "$PKG" || fail "Could not unpack $(basename "$PKG") (see patchlog.txt)."
+    pm macpkg "$W/pkgroot" "$PKG" || { [ $? = 3 ] && fail "$(basename "$PKG") is incomplete (a download or copy that stopped early): copy it again."
+      fail "Could not unpack $(basename "$PKG") (see patchlog.txt)."; }
     SRC=$(find "$W/pkgroot" -type d -path '*Data/StreamingAssets/AssetBundles' | head -1)
     INFO=$(find "$W/pkgroot" -name 'goggame-2048763853.info' | head -1)
   else
