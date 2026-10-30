@@ -16,7 +16,7 @@ The player's guide is the [README](../README.md); building is in [building.md](b
 The release zip (`cuphead.zip`, made by `package.sh`) holds `Cuphead.sh` (the launcher) and
 `cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, `gameinfo.xml`, the screenshot
 and cover, the setup in `setup/` and every licence in `licenses/` (one `LICENSE.<component>.txt`
-each); for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.sh`
+each); for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.txt`
 and `setup64/`. No game files and nothing from Unity. The setup's tools (the converter, its Python
 packages, the code patcher, the helper, the ASTC guides; the 64-bit Mono) come as `setup/setup.zip`
 and `setup64/setup64.zip` beside the scripts, so PortMaster's repository holds a few dozen files
@@ -54,7 +54,7 @@ Every step leaves a marker in `gamedata/.setup/`, so an interrupted setup contin
 stopped. A conversion the kernel kills (out of memory on a 1 GB handheld: the biggest textures
 need most of what is free beside the firmware) starts again by itself in a new process, which
 continues after the last file the journal lists, for as long as each run finishes a file
-(`setup/resume.sh`). Log: `ports/cuphead/patchlog.txt`.
+(`setup/resume.txt`). Log: `ports/cuphead/patchlog.txt`.
 
 At every launch `Cuphead.sh` presents the built-in pad to the game as an Android gamepad named
 `Xbox Wireless Controller` (`UA_PAD_NAME`; Rewired knows Android pads by name), uses ALSA for
@@ -94,7 +94,7 @@ them in a hash table, and Mono's string hash orders them so), which both builds 
 | system | build |
 |---|---|
 | `/lib/ld-linux-armhf.so.3` exists | the 32-bit build, exactly as before (its own lines of `Cuphead.sh`, unchanged) |
-| no 32-bit loader | the 64-bit build: `Cuphead.sh` sources `cuphead/launch64.sh`, which runs its own setup and the game |
+| no 32-bit loader | the 64-bit build: `Cuphead.sh` sources `cuphead/launch64.txt`, which runs its own setup and the game |
 | `CUPHEAD_ROUTE=64` | the 64-bit build on a system that has both (a test switch, e.g. on the RG34XX-SP) |
 | anything else | a message: the firmware needs 32-bit (armhf) support |
 
@@ -135,7 +135,7 @@ PortMaster's pad mapping, the exit hotkey for `ua_host64`.
 
 `build64.sh` makes the same build on a PC or Mac (IL2CPP in Docker there), for handhelds too weak
 to compile the code ([building.md](building.md)); its folder is what this setup leaves in
-`ports/cuphead/` (`ua_host64`, `launch64.sh`, `arm64/`, `.cuphead_ready64`).
+`ports/cuphead/` (`ua_host64`, `launch64.txt`, `arm64/`, `.cuphead_ready64`).
 
 Rehearsed in an aarch64 container (a handheld's busybox tools, a trimmed copy of the game): every
 step up to IL2CPP, the stop with its message there, and, with a stand-in for the IL2CPP build, the

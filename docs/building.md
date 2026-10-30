@@ -28,7 +28,7 @@ It builds:
   UnityPy and the image libraries for CPython 3.11, aarch64; it downloads what is not cached in
   `pm/cache/wheels311/` yet), and Debian 11's OpenSSL 1.1 for the 64-bit setup's downloads;
 
-and copies the converter (`pmunity`), the 64-bit build's launch part and setup (`launch64.sh`,
+and copies the converter (`pmunity`), the 64-bit build's launch part and setup (`launch64.txt`,
 `setup64/` with portmaster-unity's `tools/il2cpp/` scripts) and every licence into it
 (`cuphead/licenses/`, one `LICENSE.<component>.txt` each: this project's, portmaster-unity's
 with its THIRD_PARTY.md, libhybris, the video decoders of both runtimes, the .NET runtime,

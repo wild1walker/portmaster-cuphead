@@ -19,7 +19,7 @@ tools are deleted afterwards.
 
 ## What is in `cuphead/`
 
-- `ua_host` (32-bit), `ua_host64` and `launch64.sh`: the runtime, and the 64-bit build for
+- `ua_host` (32-bit), `ua_host64` and `launch64.txt`: the runtime, and the 64-bit build for
   firmwares without 32-bit support (its setup also compiles the game's code with Unity's IL2CPP).
 - `setup/patchscript`, `setup/questions.lua`: the first-launch setup and its one question
   (texture quality).
