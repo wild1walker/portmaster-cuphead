@@ -159,6 +159,11 @@ case $HOME in /Users/?*|/home/?*) H=$HOME ;; *) H=$HERE ;; esac
 for p in "$H" "$HERE" "$PM" "$OUT" /Users/ /Volumes/; do
   if LC_ALL=C grep -r -a -l -F "$p" "$Z"; then log "the files above name $p: not packaged"; exit 1; fi
 done
+# the setup's tools zipped, one archive a folder (PortMaster's repository then holds a few files
+# instead of hundreds; Cuphead.sh unpacks them before the first setup): all but pm/cuphead's scripts
+for d in setup setup64; do
+  (cd "$P/$d" && t=$(ls -A | grep -vxF "$(ls -A "$R/cuphead/$d")") && zip -qr -X "$d.zip" $t && rm -rf $t)
+done
 rm -f "$OUT/cuphead.zip"
 (cd "$Z" && zip -qr -X "$OUT/cuphead.zip" Cuphead.sh cuphead)
 log "built $OUT/cuphead.zip ($(du -h "$OUT/cuphead.zip" | cut -f1)): unzip it into the handheld's ports folder"

@@ -17,7 +17,10 @@ The release zip (`cuphead.zip`, made by `package.sh`) holds `Cuphead.sh` (the la
 `cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, `gameinfo.xml`, the screenshot
 and cover, the setup in `setup/` and every licence in `licenses/` (one `LICENSE.<component>.txt`
 each); for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.sh`
-and `setup64/`. No game files and nothing from Unity.
+and `setup64/`. No game files and nothing from Unity. The setup's tools (the converter, its Python
+packages, the code patcher, the helper, the ASTC guides; the 64-bit Mono) come as `setup/setup.zip`
+and `setup64/setup64.zip` beside the scripts, so PortMaster's repository holds a few dozen files
+instead of 500; `Cuphead.sh` unpacks each into its folder before the first setup and deletes it.
 
 On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's patcher
 (`PATCHER_FILE`, `PATCHER_QUESTIONS`; a failure is a `PATCH_FAIL_MSG:` line the patcher shows):
