@@ -105,7 +105,8 @@ if [ ! -f "$W/.step_package" ]; then
   pm android-data --src "$D" --pkg "$P" --out "$W/android" --name Cuphead --package com.cupheadport.game \
     --root-file animclips.txt --drop-missing-assembly GalaxyCSharp.dll "${RT[@]}" --plugin-map "$S64/plugins-il2cpp.json" \
     --consume-src --verify-bundles 2 --pack all --no-video-shader \
-    || fail "Packing the game failed (see patchlog.txt). Launch again to continue."
+    || { [ $? = 4 ] && fail "The card is too full to pack the game: free the space patchlog.txt names, then launch again to continue."
+         fail "Packing the game failed (see patchlog.txt). Launch again to continue."; }
   touch "$W/.step_package"
 fi
 
