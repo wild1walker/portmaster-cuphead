@@ -63,5 +63,8 @@ fi
 [ -f "$W/goggame-2048763853.info" ] && cp "$W/goggame-2048763853.info" "$T/"
 touch "$T/cuphead_dlc"
 rm -rf "$W" "$GD"/*.pkg "$GD"/*.app
+for a in "$GD"/*/Cuphead.app; do   # (Steam: depot_1117851/, the DLC's bundles moved out of it)
+  [ -d "$a" ] && rm -rf "$a" && rmdir "$(dirname "$a")" 2>/dev/null
+done
 sync
 step "the DLC is in"
