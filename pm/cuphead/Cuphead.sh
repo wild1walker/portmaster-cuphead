@@ -55,6 +55,10 @@ run_setup() {   # run_setup <patchscript> <time> [no-questions]
   mkdir -p "$python_dir"
   [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
   $ESUDO mount "$controlfolder/libs/${runtime}.squashfs" "$python_dir"
+  if [ ! -x "$python_dir/bin/python3" ]; then   # (not installed, and harbourmaster could not download it)
+    pm_message "PortMaster's Python runtime (python_3.11) is missing: connect to Wi-Fi and start Cuphead again, or install it in PortMaster (Options, Runtime Manager)."
+    sleep 8; pm_finish; exit 1
+  fi
   for z in "$GAMEDIR"/setup/*.zip "$(dirname "$1")"/*.zip; do
     [ -f "$z" ] || continue
     PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m zipfile -e "$z" "$(dirname "$z")" \
