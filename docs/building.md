@@ -26,7 +26,8 @@ It builds:
   `runtime/host/out/arm64/ua_host`, shipped as `cuphead/ua_host64`);
 - the setup's tools, `pmu` (portmaster-unity's `setup-rs`: a static aarch64 program with the
   converter's commands the setup runs, so the setup needs no Python), in setup-rs's Rust image
-  (`ua-rust`, `setup-rs/tools/rs.sh`), with UnityPy's class database built in;
+  (`ua-rust` with GCC 10, `setup-rs/tools/rs.sh` and `setup-rs/docker/Dockerfile.gcc10`), with UnityPy's
+  class database built in;
 
 and copies `pmu`, the 64-bit build's launch part and setup (`launch64.txt`,
 `setup64/` with portmaster-unity's `tools/il2cpp/` scripts) and every licence into it
@@ -38,7 +39,7 @@ optimized-routines, lz4, UnityPy, musl and the Rust crates). Both runtimes are b
 package.sh rebuilds them that way when they are not. The 32-bit build's files are the same as without the 64-bit
 build; only `Cuphead.sh` (the route choice), `port.json` and the READMEs changed with it.
 
-Needs: Docker (with the `ua-rust` image), the .NET 8 SDK (`DOTNET=` if `dotnet` is not on
+Needs: Docker (with the `ua-rust` image and its GCC 10), the .NET 8 SDK (`DOTNET=` if `dotnet` is not on
 the PATH), and portmaster-unity with `setup-rs/` (its branch `rust-setup`).
 
 ## Converting on a computer instead (`build.sh`)

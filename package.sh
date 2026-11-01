@@ -7,8 +7,9 @@
 # Needs:
 #   PMUNITY        a portmaster-unity checkout with setup-rs/ (default ../portmaster-unity), its runtime
 #                  built (32-bit and 64-bit: runtime/host/out/ua_host, runtime/host/out/arm64/ua_host) or Docker
-#   Docker         with setup-rs's Rust image (ua-rust, setup-rs/tools/rs.sh): the setup's tools, pmu, are
-#                  built in it (a static aarch64 binary, Unity's class database from UnityPy embedded)
+#   Docker         with setup-rs's Rust image (ua-rust, setup-rs/tools/rs.sh) and its GCC 10
+#                  (setup-rs/docker/Dockerfile.gcc10): the setup's tools, pmu, are built in it (a static
+#                  aarch64 binary, Unity's class database from UnityPy embedded)
 #   GAME_MANAGED   Cuphead's Managed folder (e.g. Cuphead.app/Contents/Resources/Data/Managed): the
 #                  helper compiles against the game's assemblies (none of them is copied)
 #   DONORS         the folder with the donor APKs (donor-2017.4.9f1-mono-armv7.apk, donor-2017.4.40f1-il2cpp-arm64.apk,
@@ -69,6 +70,7 @@ RS_ROOT=${RS_ROOT:-$B} RS_MOUNTS= "$PM/setup-rs/tools/rs.sh" "$PM" bash -c '
   set -euo pipefail
   export CARGO_TARGET_DIR=/target/portmaster-cuphead PMU_TPK=/opt/pylibs/UnityPy/resources/lzma.tpk
   T=aarch64-unknown-linux-musl; O=/tmp/out; mkdir -p $O /build; cp -a . /build/setup-rs; cd /build/setup-rs
+  command -v "${TC_CXX:-none}" >/dev/null || { echo "ua-rust has no GCC 10 (TC_CXX; setup-rs/docker/Dockerfile.gcc10): the ASTC blocks would not all match" >&2; exit 1; }
   cargo build -q --release --target $T -p pmu >&2
   cp $CARGO_TARGET_DIR/$T/release/pmu $O/
   cat /opt/pylibs/unitypy-*.dist-info/licenses/LICENSE > $O/unitypy.txt
