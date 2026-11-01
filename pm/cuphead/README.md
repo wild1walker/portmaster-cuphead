@@ -10,8 +10,8 @@ to a few hours, once; about 10 GB free on the card during the setup, about 2.5 G
 converts the game's shaders, textures and audio for the handheld and removes the copied game when it
 is done. No Wi-Fi and no PortMaster runtime are needed: Unity's Android player comes from the
 port's donors (`donor/`: small games of the port's own, built with Unity), and the setup's tools are
-a small native program (`setup/pmu`). If the setup is interrupted, start Cuphead again: it
-continues where it stopped (log: `ports/cuphead/patchlog.txt`).
+a small native program (`setup/pmu`). If the setup is interrupted (a flat battery, a restart),
+start Cuphead again: it continues where it stopped (log: `ports/cuphead/patchlog.txt`).
 
 The game runs on Unity's own Android player, loaded natively on the handheld's Linux by the port's
 runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support the setup builds a

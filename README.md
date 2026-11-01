@@ -5,11 +5,10 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 
 - **For:** players with a handheld that runs PortMaster and has 32-bit ARM libraries (tested on an
   Anbernic RG34XX-SP with Knulli). Handhelds whose firmware has no 32-bit libraries get a 64-bit
-  build instead, picked by the port itself ([64-bit-only handhelds](#64-bit-only-handhelds); new,
-  not tested on a handheld yet).
+  build instead, picked by the port itself ([64-bit-only handhelds](#64-bit-only-handhelds)).
 - **You need your own copy of the game.** This port contains **no game files**, and neither do its
-  releases. You bring Cuphead for macOS from GOG; the port turns it into a handheld version the
-  first time you start it.
+  releases. You bring Cuphead for macOS from GOG or Steam; the port turns it into a handheld version
+  the first time you start it.
 - **How it runs:** Unity (the engine Cuphead is made with) has an Android version of its player.
   The port runs that player directly on the handheld's Linux, with no Android and no emulator. That is why Cuphead runs at
   close to its full 60 frames per second.
@@ -36,11 +35,11 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 | | |
 |---|---|
 | **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. A 64-bit ARM firmware without them gets the [64-bit build](#64-bit-only-handhelds). |
-| **Tested on** | Players have run it on Knulli, muOS, dArkOS and ROCKNIX (libmali and Adreno); developed on an Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480) with Knulli, where the 64-bit build has run too. |
-| **The game** | Cuphead for **macOS** from **GOG**, version 1.3.4, with or without the DLC. Either GOG's macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. |
-| **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG gives you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
+| **Tested on** | Players have run it on Knulli (also on a Miyoo Flip), muOS (also on an RG35XX-H), dArkOS and ROCKNIX (libmali and Adreno); developed on an Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480) with Knulli, where the 64-bit build has run too. ROCKNIX on RK3566 handhelds: see [Known issues](#known-issues). |
+| **The game** | Cuphead for **macOS** from **GOG** or **Steam**, version 1.3.4, with or without the DLC. GOG: its macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. Steam: `Cuphead.app` copied from a Mac, or, without a Mac, the macOS version downloaded from Steam's console (`steam://open/console`): `download_depot 268910 268912` for the game and `download_depot 268910 1117851` for the DLC (the two downloaded folders, `depot_268912` and `depot_1117851`, as they are). |
+| **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG and Steam give you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
 | **Free space** | About 10 GB free on the card while the setup runs (the 64-bit build: about 12 GB). About 2.5 GB stay used afterwards. |
-| **Wi-Fi** | Not needed: the port carries Unity's Android player (in small games of its own built with Unity). |
+| **Wi-Fi** | Not needed: the port carries Unity's Android player (in small games of its own built with Unity) and its own setup tools (`setup/pmu`), so no PortMaster runtime is downloaded either. |
 | **Time** | The first launch takes about 1 to 3 hours, once (the 64-bit build: several hours more). Every launch after that starts the game straight away. |
 
 ## Install
@@ -62,7 +61,8 @@ network). On other firmwares use the `ports` folder PortMaster installs its port
        ...
    ```
 3. **Copy your game into `ports/cuphead/gamedata/`.** Either the GOG macOS installers (the `.pkg`
-   files, the game's and the DLC's) or the whole `Cuphead.app` folder, as it is.
+   files, the game's and the DLC's), the whole `Cuphead.app` folder as it is, or Steam's two
+   downloaded folders (`depot_268912` and `depot_1117851`) as they are.
 4. **Start Cuphead from the Ports menu.** If it does not show up, refresh your game list or restart
    the handheld. The first start runs the setup (next section).
 
@@ -82,7 +82,7 @@ The first time you start Cuphead, PortMaster shows a setup screen with the progr
      the setup takes about a fifth longer.
 
    Your first answer is kept, also for the DLC added later.
-2. **It builds the game for the handheld.** It unpacks GOG's installers (10 to 20 minutes),
+2. **It builds the game for the handheld.** It unpacks GOG's installers if you used them (10 to 20 minutes),
    unpacks Unity's Android player from the port's own files, converts the game's graphics, textures and
    settings for the handheld (the long part), and packs everything for the player.
 3. **When it is done, the game starts.** The setup then deletes your installers (or what is left
@@ -91,8 +91,8 @@ The first time you start Cuphead, PortMaster shows a setup screen with the progr
 
 Good to know:
 
-- **You can stop it.** If the battery runs out or you press the power button, just start Cuphead
-  again: the setup continues where it stopped.
+- **You can stop it.** If the battery runs out, you press the power button or the handheld
+  restarts, just start Cuphead again: the setup continues where it stopped.
 - **On 1 GB handhelds the conversion can run out of memory.** It then starts again by itself where
   it stopped (`patchlog.txt` says so); you do not need to do anything.
 - **Keep the handheld plugged in** if you can: it is a long job for a small battery.
@@ -206,6 +206,10 @@ More options for testing and measuring: [docs/technical.md](docs/technical.md#op
   the current port, so the short pulses stay the default.
 - **The first launch is long** (about 1 to 3 hours, once).
 - **The macOS version only** (GOG's or Steam's). The Windows version does not work.
+- **ROCKNIX on RK3566 handhelds (RG ARC-S, RGB30):** with 2026.10.31 the handheld restarted during
+  the texture conversion. Since 2026.11.01 the setup needs much less memory there (about 330 MB
+  instead of about 510 MB) and continues after a restart; it has not been tried on those handhelds
+  again yet. Please report how it goes.
 - **Firmwares tested by players:** Knulli, muOS, dArkOS, ROCKNIX (libmali and Adreno). Not tried yet:
   AmberELEC, ROCKNIX with Panfrost. If you try another one, please report how it went.
 
@@ -215,13 +219,12 @@ PortMaster shows the setup's message. The most common ones:
 
 | Message | What to do |
 |---|---|
-| "Put the installed Cuphead.app (GOG macOS) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata" | The setup found no game. Check that the files are directly in `ports/cuphead/gamedata/`. |
-| "These are the Windows installers" | Download the macOS installers from GOG instead. |
-| "This Cuphead version is not supported" | The setup needs the build of version 1.3.4 (Unity 2017.4.9f1), as GOG's macOS installers have it. |
-| "Unpacking the installers needs about 9 GB free on the card" | Make space on the card, then start Cuphead again. |
-| "PortMaster's 7-Zip is missing: update PortMaster." | Update PortMaster, then start Cuphead again. |
-| "Unpacking the installers and building the 64-bit version need about 12 GB free" | Make space on the card, then start Cuphead again. |
-| "The setup's tools (ports/cuphead/setup/) are gone" | The other build's setup removed them: install `cuphead.zip` again, copy your game into `gamedata/` again, start Cuphead. |
+| "Put Cuphead.app (macOS, from GOG or Steam) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata" | The setup found no game. Check that the files (or Steam's `depot_` folders) are directly in `ports/cuphead/gamedata/`. |
+| "This Cuphead version is not supported" | The setup needs the macOS build of version 1.3.4 (Unity 2017.4.9f1), GOG's or Steam's. The Windows version does not work. |
+| "... is incomplete (a download or copy that stopped early)" | An installer or a game or DLC file is cut short (`patchlog.txt` names it): download or copy it again, then start Cuphead again. |
+| "The setup needs about 10 GB free on the card" (64-bit: "about 12 GB") | Make space on the card, then start Cuphead again. |
+| "The card is too full to pack the game" | Free the space `patchlog.txt` names, then start Cuphead again: it continues where it stopped. |
+| "The handheld restarted during the conversion and the setup lost its place" | A setup started with a release before 2026.11.01 was cut off by a restart. Delete `ports/cuphead/gamedata`, copy your Cuphead files into a new `gamedata` folder and start Cuphead again. |
 | Any other message | Start Cuphead again (the setup continues where it stopped). If it stops again, [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |
 
 ## Getting help and reporting a bug
