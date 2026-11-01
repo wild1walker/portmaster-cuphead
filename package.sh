@@ -36,10 +36,10 @@ export DOTNET_ROOT=$(dirname "$DOTNET") DOTNET_CLI_TELEMETRY_OPTOUT=1
 log() { echo "== $*"; }
 
 B="$OUT/build"; mkdir -p "$B"
-log "helper (CupheadPort.dll)"
-"$DOTNET" build -c Release -o "$B/helper" -p:GameManaged="$GM" "$HERE/helper" >/dev/null
+log "helper (CupheadPort.dll; no commit stamped in it, so builds of the same source are identical)"
+"$DOTNET" build -c Release -o "$B/helper" -p:GameManaged="$GM" -p:IncludeSourceRevisionInInformationalVersion=false "$HERE/helper" >/dev/null
 log "code patcher for the handheld (linux-arm64, self-contained)"
-"$DOTNET" publish "$HERE/codepatch" -c Release -r linux-arm64 --self-contained -p:PublishSingleFile=true \
+"$DOTNET" publish "$HERE/codepatch" -c Release -r linux-arm64 --self-contained -p:IncludeSourceRevisionInInformationalVersion=false -p:PublishSingleFile=true \
   -p:PublishTrimmed=true -p:InvariantGlobalization=true -p:DebugType=none -p:TrimmerRemoveSymbols=true \
   -o "$B/codepatch-arm64" >/dev/null       # (TrimmerRemoveSymbols: else ILLink stamps the trimmed DLLs with obj/'s path)
 [ -x "$PM/runtime/host/out/ua_host" ] || { log "runtime (Docker)"; "$PM/runtime/build.sh"; }
