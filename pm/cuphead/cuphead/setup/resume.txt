@@ -17,6 +17,14 @@ pm_convert() {   # pm_convert <data folder> <pmu convert args>
   done
 }
 
+# A conversion that stopped: its message. Status 5: the journal was damaged (an older setup wrote it
+# without a sync and the handheld restarted): the files converted in place cannot be told
+# apart, so the setup starts again from the game's files.
+convert_failed() {   # convert_failed <status> <message>
+  [ "$1" = 5 ] && fail "The handheld restarted during the conversion and the setup lost its place. Delete ports/cuphead/gamedata, copy your Cuphead files into a new gamedata folder and launch Cuphead again."
+  fail "$2"
+}
+
 journal_files() {   # journal_files <.pmunity.json>: the files its steps have finished (0 before the first)
   pm journal-files "$1" 2>/dev/null || echo 0
 }

@@ -83,7 +83,7 @@ echo "$Q" > "$W/.texture_quality"
 if [ ! -f "$W/.step_convert" ]; then
   step "converting the game, texture quality $Q"
   pm_convert "$D" --config "$S/cuphead.json" --plugin animclips --set textures.quality="$Q" --set textures.guide="$S/astc_guide_$Q.bin" \
-    || fail "Converting the game failed (see patchlog.txt). Launch again to continue."
+    || convert_failed $? "Converting the game failed (see patchlog.txt). Launch again to continue."
   touch "$W/.step_convert"
 fi
 
