@@ -270,8 +270,9 @@ Credits:
   the setup.
 - The port's runtime (`ua_host`) and converter use [libhybris](https://github.com/libhybris/libhybris)
   (Apache 2.0); the runtime links the video decoders libvpx, libvorbis, libogg, libopus and OpenH264.
-- The setup runs on PortMaster's Python runtime (`python_3.11`) with [UnityPy](https://github.com/K0lb3/UnityPy)
-  and ARM's astc-encoder (`setup/pylibs/`); the code patcher
+- The setup's tools are a small native program (`setup/pmu`; source: portmaster-unity's `setup-rs`,
+  no Python needed) with ARM's astc-encoder, parts of Pillow and texture2ddecoder, and
+  [UnityPy](https://github.com/K0lb3/UnityPy)'s class database; the code patcher
   uses [Mono.Cecil](https://github.com/jbevain/cecil) and the .NET runtime.
 
 The release zip carries the licence of every part it contains, in `cuphead/licenses/`.

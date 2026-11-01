@@ -38,32 +38,14 @@ if [ "$CUPHEAD_ROUTE" = 32 ] && [ "$ARMHF" = no ]; then
   sleep 8
 fi
 
-# first launch: the setup builds the game from the player's copy in gamedata/, with PortMaster's
-# Python runtime (setup/pylibs: the extra packages it needs). The setup's tools come zipped
-# (setup/setup.zip, setup64/setup64.zip) and are unpacked before their first setup
-runtime="python_3.11"
-export python_dir="$HOME/$runtime"
+# first launch: the setup builds the game from the player's copy in gamedata/ with its own tools
+# (setup/pmu, one native program). The rest of the setup's files come zipped (setup/setup.zip,
+# setup64/setup64.zip) and are unpacked before their first setup
 run_setup() {   # run_setup <patchscript> <time> [no-questions]
-  # (without Wi-Fi: the runtime copied into ports/cuphead/ goes where PortMaster keeps it)
-  [ -f "$GAMEDIR/${runtime}.squashfs" ] && $ESUDO mv -f "$GAMEDIR/${runtime}.squashfs" "$controlfolder/libs/"
-  if [ ! -f "$controlfolder/libs/${runtime}.squashfs" ]; then
-    if [ ! -f "$controlfolder/harbourmaster" ]; then
-      pm_message "This port requires the latest PortMaster to run, please go to https://portmaster.games/ for more info."
-      sleep 5
-      exit 1
-    fi
-    $ESUDO $controlfolder/harbourmaster --quiet --no-check runtime_check "${runtime}.squashfs"
-  fi
-  mkdir -p "$python_dir"
-  [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
-  $ESUDO mount "$controlfolder/libs/${runtime}.squashfs" "$python_dir"
-  if [ ! -x "$python_dir/bin/python3" ]; then   # (not installed, and harbourmaster could not download it)
-    pm_message "PortMaster's Python runtime (python_3.11) is missing. Connect to Wi-Fi and start Cuphead again, or install it in PortMaster (Options, Runtime Manager). Without Wi-Fi: put python_3.11.squashfs from PortMaster's releases in ports/cuphead and start Cuphead again."
-    sleep 8; pm_finish; exit 1
-  fi
+  $ESUDO chmod +x "$GAMEDIR/setup/pmu"
   for z in "$GAMEDIR"/setup/*.zip "$(dirname "$1")"/*.zip; do
     [ -f "$z" ] || continue
-    PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m zipfile -e "$z" "$(dirname "$z")" \
+    "$GAMEDIR/setup/pmu" zip-extract "$z" "$(dirname "$z")" \
       && rm -f "$z" || { pm_message "Could not unpack ${z#$GAMEDIR/}: is the card full?"; sleep 5; pm_finish; exit 1; }
   done
   export GAMEDIR DEVICE_ARCH controlfolder DISPLAY_WIDTH DISPLAY_HEIGHT   # (the questions read the screen size)
@@ -80,7 +62,6 @@ run_setup() {   # run_setup <patchscript> <time> [no-questions]
   source "$controlfolder/utils/patcher.txt"
   kill "$sampler" 2>/dev/null
   cpu_restore
-  [[ "$PM_CAN_MOUNT" != "N" ]] && $ESUDO umount "$python_dir"
 }
 
 # The Delicious Last Course added later (GOG's DLC installer, or a Cuphead.app with it, in

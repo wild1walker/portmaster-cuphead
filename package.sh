@@ -5,12 +5,12 @@
 # its own built with Unity (a free licence), whose APKs carry the player, so the setup needs no network.
 #
 # Needs:
-#   PMUNITY        a portmaster-unity checkout (default ../portmaster-unity), its runtime built (32-bit
-#                  and 64-bit: runtime/host/out/ua_host, runtime/host/out/arm64/ua_host) or Docker
+#   PMUNITY        a portmaster-unity checkout with setup-rs/ (default ../portmaster-unity), its runtime
+#                  built (32-bit and 64-bit: runtime/host/out/ua_host, runtime/host/out/arm64/ua_host) or Docker
+#   Docker         with setup-rs's Rust image (ua-rust, setup-rs/tools/rs.sh): the setup's tools, pmu, are
+#                  built in it (a static aarch64 binary, Unity's class database from UnityPy embedded)
 #   GAME_MANAGED   Cuphead's Managed folder (e.g. Cuphead.app/Contents/Resources/Data/Managed): the
 #                  helper compiles against the game's assemblies (none of them is copied)
-#   PYLIBS         the Python packages the setup adds to PortMaster's python_3.11 runtime
-#                  (pm/build_pylibs.sh <dir> builds them; default: built into the out dir from pm/cache)
 #   DONORS         the folder with the donor APKs (donor-2017.4.9f1-mono-armv7.apk, donor-2017.4.40f1-il2cpp-arm64.apk,
 #                  donor-2017.4.40f1-mono-armv7.apk: donor/ in portmaster-unity's tools, built by its build.sh)
 #   ASTC_GUIDES    a folder with the ASTC guides for Cuphead's textures, astc_guide_fast.bin and
@@ -59,8 +59,36 @@ for a in armhf arm64; do
   if LC_ALL=C grep -aqi steam "$h"; then log "ua_host ($a) without Steamworks stand-ins (Docker)"; STEAMSTUB=0 ARCH=$a "$PM/runtime/host/build.sh" >/dev/null; fi
   if LC_ALL=C grep -aqi steam "$h"; then log "$h still has Steamworks stand-ins"; exit 1; fi
 done
-PYL=${PYLIBS:-$B/pylibs}
-[ -d "$PYL/UnityPy" ] && [ -f "$PYL"/guided_astc.abi3.so ] || { log "setup's Python packages"; GUIDED_ASTC="$PM/convert/native/guided_astc" "$HERE/pm/build_pylibs.sh" "$PYL"; }
+# the setup's tools: pmu (portmaster-unity's setup-rs), built from a copy of setup-rs at a neutral
+# path (the binary names its source files), with the licence texts of what is compiled into it
+# that setup-rs does not carry (crates.io's crates, Rust's standard library, musl, UnityPy)
+[ -f "$PM/setup-rs/tools/rs.sh" ] || { echo "$PM has no setup-rs (portmaster-unity's branch rust-setup)" >&2; exit 1; }
+log "the setup's tools (pmu, Docker)"
+rm -rf "$B/pmu"; mkdir -p "$B/pmu"
+RS_ROOT=${RS_ROOT:-$B} RS_MOUNTS= "$PM/setup-rs/tools/rs.sh" "$PM" bash -c '
+  set -euo pipefail
+  export CARGO_TARGET_DIR=/target/portmaster-cuphead PMU_TPK=/opt/pylibs/UnityPy/resources/lzma.tpk
+  T=aarch64-unknown-linux-musl; O=/tmp/out; mkdir -p $O /build; cp -a . /build/setup-rs; cd /build/setup-rs
+  cargo build -q --release --target $T -p pmu >&2
+  cp $CARGO_TARGET_DIR/$T/release/pmu $O/
+  cat /opt/pylibs/unitypy-*.dist-info/licenses/LICENSE > $O/unitypy.txt
+  cat /usr/share/doc/musl/copyright > $O/musl.txt
+  cat $(ls -d /opt/cargo/registry/src/*/lz4-sys-1.9.4 | head -1)/liblz4/lib/LICENSE > $O/lz4.txt
+  MIT=$(sed /\<year\>/d $(rustc --print sysroot)/share/doc/rust/licenses/MIT.txt)
+  { echo "Rust standard library ($(rustc --version | cut -d" " -f2)): MIT or Apache-2.0, copyright the Rust project contributors"
+    echo; echo "$MIT"
+    cargo tree -q -p pmu --target $T -e normal,no-proc-macro --prefix none --no-dedupe --format "{p}|{l}" | grep -v "(/" | sort -u |
+    while IFS="|" read -r p l; do
+      n=${p% v*}; v=${p##* v}; d=$(ls -d /opt/cargo/registry/src/*/$n-$v | head -1)
+      printf "\n\n%s %s (%s)\n\n" "$n" "$v" "$l"
+      [ $n = lz4-sys ] && { printf "the lz4 library: LICENSE.lz4.txt. The crate (lz4-rs): Copyright (c) 2015 Artem V. Navrotskiy\n%s\n" "$MIT"; continue; }
+      f=; case "$l" in *MIT*) f=$(ls "$d"/LICEN[CS]E-MIT* "$d"/LICENSES/MIT* 2>/dev/null || true) ;; esac   # (MIT where offered)
+      [ -n "$f" ] || f=$(find "$d" -maxdepth 1 -type f \( -name "LICEN[CS]E*" -o -name "COPYING*" -o -name "UNLICENSE*" \) | sort)
+      [ -n "$f" ] || { echo "$n $v: no licence file" >&2; exit 1; }
+      cat $f
+    done; } > $O/rust-crates.txt
+  tar -c -C $O .' | tar -x -C "$B/pmu"
+[ -s "$B/pmu/pmu" ] || { echo "pmu was not built" >&2; exit 1; }
 
 log "assembling"
 Z="$OUT/zip"; rm -rf "$Z"; mkdir -p "$Z"
@@ -74,17 +102,10 @@ echo "${RELEASE:-dev $(git -C "$HERE" rev-parse --short HEAD)}" > "$P/version.tx
 cp "$PM/runtime/host/out/ua_host" "$P/"
 cp "$PM/runtime/host/out/arm64/ua_host" "$P/ua_host64"
 S="$P/setup"
-cp "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" "$HERE/convert/cuphead.json" "$HERE/convert/animclips.py" "$S/"
+cp "$B/helper/CupheadPort.dll" "$B/codepatch-arm64/codepatch" "$HERE/convert/cuphead.json" "$B/pmu/pmu" "$S/"
 for q in fast medium; do
   if [ -f "${ASTC_GUIDES:-/nonexistent}/astc_guide_$q.bin" ]; then cp "$ASTC_GUIDES/astc_guide_$q.bin" "$S/"
   else log "WARNING: no astc_guide_$q.bin in ASTC_GUIDES: the setup encodes $q textures without a guide (slower)"; fi
-done
-# (etcpak: UnityPy's BC encoder, which the setup never uses: it encodes ASTC itself)
-rsync -a --exclude 'etcpak*' "$PYL/" "$S/pylibs/"
-# the converter's modules the setup can import (pm/setup_modules.py), and its shader files
-{ python3 "$HERE/pm/setup_modules.py" "$PM/convert" "$HERE/convert/animclips.py"
-  (cd "$PM/convert" && find pmunity -name '*.shader'); } | while read -r f; do
-  mkdir -p "$S/$(dirname "$f")"; cp "$PM/convert/$f" "$S/$f"
 done
 S64="$P/setup64"
 mkdir -p "$S64"; cp "$HERE/convert/plugins-il2cpp.json" "$S64/"
@@ -140,12 +161,20 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 TXT
-for d in "$S"/pylibs/*.dist-info; do                       # the setup's Python packages
-  n=$(sed -n 's/^Name: //p' "$d/METADATA" | head -1 | tr 'A-Z_' 'a-z-')
-  [ "$n" = guided-astc ] && continue                       # (portmaster-unity's: LICENSE.portmaster-unity.txt)
-  for f in "$d"/LICEN[CS]E* "$d"/licenses/* "$d"/COPYING*; do [ -f "$f" ] && cat "$f" && printf '\n'; done > "$L/LICENSE.$n.txt"
-  [ -s "$L/LICENSE.$n.txt" ] || { echo "$d: no licence file" >&2; exit 1; }
-done
+V="$PM/setup-rs/vendor"                                    # in setup/pmu (portmaster-unity's THIRD_PARTY.md)
+{ echo "astc-encoder (Arm), compiled into setup/pmu"; echo; cat "$V/astc-encoder/LICENSE.txt"; } > "$L/LICENSE.astc-encoder.txt"
+{ echo "Pillow's libImaging/Resample.c, compiled into setup/pmu (its BCn decoder, ported: public domain)"; echo
+  cat "$V/pillow/LICENSE"; } > "$L/LICENSE.pillow.txt"
+{ echo "texture2ddecoder's crunch unpackers, compiled into setup/pmu"; echo; cat "$V/texture2ddecoder/LICENSE"
+  for f in "$V"/texture2ddecoder/src/Texture2DDecoder/{crunch,unitycrunch}/crn_decomp.h; do
+    printf '\n\n%s\n\n' "${f#$V/texture2ddecoder/src/Texture2DDecoder/}"
+    sed -n '/crn.* uses .*ZLIB license/,/This notice may not be removed/p' "$f" | sed 's#^ *// \{0,1\}##'
+  done; } > "$L/LICENSE.texture2ddecoder.txt"
+{ echo "optimized-routines (Arm): sinf, cosf, sincosf, compiled into setup/pmu"; echo; cat "$V/optimized-routines/LICENSE"; } > "$L/LICENSE.optimized-routines.txt"
+{ echo "lz4 1.9.4 (the crate lz4-sys), compiled into setup/pmu"; echo; cat "$B/pmu/lz4.txt"; } > "$L/LICENSE.lz4.txt"
+{ echo "UnityPy: its class id names and class database (resources/lzma.tpk), in setup/pmu"; echo; cat "$B/pmu/unitypy.txt"; } > "$L/LICENSE.unitypy.txt"
+{ echo "musl libc, linked into setup/pmu"; echo; cat "$B/pmu/musl.txt"; } > "$L/LICENSE.musl.txt"
+{ echo "The Rust crates (crates.io) and Rust's standard library compiled into setup/pmu"; echo; cat "$B/pmu/rust-crates.txt"; } > "$L/LICENSE.rust-crates.txt"
 MS="$M64W/src/unity-2017.4-mbe"                            # the 64-bit build's Mono route
 { echo "Unity's fork of Mono, branch unity-2017.4-mbe ($(cat "$MO/SOURCE.txt")): setup64/mono64/libmonobdwgc-2.0.so, libMonoPosixHelper.so"
   echo; cat "$MS/LICENSE"; printf '\n\n'; cat "$MS/PATENTS.TXT"; } > "$L/LICENSE.mono.txt"
@@ -161,8 +190,9 @@ for p in "$H" "$HERE" "$PM" "$OUT" /Users/ /Volumes/; do
 done
 # the setup's tools zipped, one archive a folder (PortMaster's repository then holds a few files
 # instead of hundreds; Cuphead.sh unpacks them before the first setup): all but pm/cuphead's scripts
+# (setup/pmu stays outside: the launcher unpacks the zips with it)
 for d in setup setup64; do
-  (cd "$P/$d" && t=$(ls -A | grep -vxF "$(ls -A "$R/cuphead/$d")") && zip -qr -X "$d.zip" $t && rm -rf $t)
+  (cd "$P/$d" && t=$(ls -A | grep -vxF "$(ls -A "$R/cuphead/$d"; echo pmu)") && zip -qr -X "$d.zip" $t && rm -rf $t)
 done
 rm -f "$OUT/cuphead.zip"
 (cd "$Z" && zip -qr -X "$OUT/cuphead.zip" Cuphead.sh cuphead)

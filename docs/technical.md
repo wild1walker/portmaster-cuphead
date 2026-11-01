@@ -17,33 +17,35 @@ The release zip (`cuphead.zip`, made by `package.sh`) holds `Cuphead.sh` (the la
 `cuphead/`: `ua_host`, PortMaster's exit hotkey file, `port.json`, `gameinfo.xml`, the screenshot
 and cover, the setup in `setup/` and every licence in `licenses/` (one `LICENSE.<component>.txt`
 each); for the [64-bit build](#the-64-bit-build) also `ua_host64`, `launch64.txt`
-and `setup64/`. No game files and nothing from Unity. The setup's tools (the converter, its Python
-packages, the code patcher, the helper, the ASTC guides; the 64-bit Mono) come as `setup/setup.zip`
-and `setup64/setup64.zip` beside the scripts, so PortMaster's repository holds a few dozen files
-instead of 500; `Cuphead.sh` unpacks each into its folder before the first setup and deletes it.
+and `setup64/`. No game files and nothing from Unity. The setup's tools are `setup/pmu`, a small
+native program (aarch64, static; its source is portmaster-unity's `setup-rs`), and, zipped beside
+the scripts as `setup/setup.zip` and `setup64/setup64.zip` (so PortMaster's repository holds a few
+dozen files), the code patcher, the helper, the ASTC guides and the 64-bit Mono; `Cuphead.sh`
+unpacks each zip into its folder with `pmu` before the first setup and deletes it.
 
 On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's patcher
 (`PATCHER_FILE`, `PATCHER_QUESTIONS`; a failure is a `PATCH_FAIL_MSG:` line the patcher shows):
 
-1. **Python:** PortMaster's `python_3.11` runtime (`attr.runtime` in `port.json`; `Cuphead.sh`
-   mounts it at `$HOME/python_3.11` for the setup) with the packages it lacks in `setup/pylibs/`
-   (UnityPy, lz4, astc-encoder, Pillow and their helpers, aarch64, built by `pm/build_pylibs.sh`).
+1. **The tools:** `setup/pmu` has the commands of portmaster-unity's converter (`pmunity`) the
+   setup runs, ported to Rust with the same outputs byte for byte; no PortMaster runtime (Python)
+   is needed. Unity's class database (from UnityPy) is built into it.
 2. **The game:** finds `Cuphead.app` in `gamedata/` (or one folder deeper), or unpacks GOG's macOS
-   installers with `pmunity macpkg` (largest first: the game, then the DLC; about 9 GB free
+   installers with `pmu macpkg` (largest first: the game, then the DLC; about 9 GB free
    needed); refuses any build that is not Unity 2017.4.9f1; keeps the
    GOG `.info` files (the DLC check reads them) and Mono's `etc` folder.
 3. **Unity's player:** `UnitySetup-Android-Support-for-Editor-2017.4.9f1.exe` from `gamedata/`, or
    downloaded from Unity (`download.unity3d.com`, about 190 MB) and checked against its SHA-256;
    the player's Mono release libraries, its Android `Managed` assemblies and its
    `unity default resources` are extracted with PortMaster's 7-Zip.
-4. **Conversion:** `pmunity convert` with `convert/cuphead.json` and the `animclips.py` plugin:
+4. **Conversion:** `pmu convert` with `convert/cuphead.json` and the `animclips` plugin step
+   (`convert/animclips.py`, built into pmu):
    GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, else
    medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
    settings and audio, and the helper's animation table. The shader settings keep the output the
    handheld was tested with: `glcore4x` off, and `compute` off (Cuphead's one compute shader, the
    post-processing stack's eye-adaptation histogram, keeps no OpenGL ES kernel, so the player
    stays at Android 4.4's level and OpenGL ES 3.0, as tested).
-5. **Packing:** `pmunity android-data` writes the APK and OBB the player reads, with the code
+5. **Packing:** `pmu android-data` writes the APK and OBB the player reads, with the code
    patcher run on the original `Assembly-CSharp.dll` (`codepatch --target=android`), the helper
    `CupheadPort.dll`, Mono's config and the dllmap for SDL2.
 6. **Installing:** the player's three libraries go into `lib/`, the APK, OBB and their files into
@@ -110,20 +112,20 @@ own audio driver choice (a 64-bit program reaches the sound server directly), th
 PortMaster's pad mapping, the exit hotkey for `ua_host64`.
 
 **The setup** (`setup64/patchscript`; markers in `gamedata/.setup64/`, PortMaster's
-`PATCH_FAIL_MSG:` lines, log `patchlog.txt`), with PortMaster's Python and the converter in
-`setup/`, as the 32-bit setup:
+`PATCH_FAIL_MSG:` lines, log `patchlog.txt`), with the tools in `setup/` (`pmu`), as the 32-bit
+setup:
 
 1. **The game** as in the 32-bit setup (`Cuphead.app` or the GOG installers; 12 GB free for the
    installers, which stay until the end).
-2. **Unity's player:** `pmunity player donor 2017.4.40f1 --backend il2cpp --abi arm64-v8a --managed`
+2. **Unity's player:** `pmu player donor 2017.4.40f1 --backend il2cpp --abi arm64-v8a --managed`
    from the port's two 2017.4.40f1 donors (the IL2CPP one's player, the Mono one's UnityEngine
    assemblies); `libmain.so` and `libunity.so` checked against their SHA-256.
-3. **Conversion:** exactly the 32-bit setup's (`convert/cuphead.json`, `animclips.py`, the texture
+3. **Conversion:** exactly the 32-bit setup's (`convert/cuphead.json`, `animclips`, the texture
    question).
 4. **The code:** `codepatch --target=android` on the original `Assembly-CSharp.dll` (the data's
    `Managed/` stays as it is) and `CupheadPort.dll`, kept in the work folder (`managed/`), as the
    32-bit setup applies them.
-5. **Packing:** `pmunity android-data --mono64` with the patched
+5. **Packing:** `pmu android-data --mono64` with the patched
    `Assembly-CSharp.dll`, `CupheadPort.dll` and `setup64/mono64/classlibs/*.dll` as
    `--managed-file`s (the class libraries replace the game's 2.0 ones of the same names), Mono's
    Linux config (`--mono-etc setup64/mono64/etc`) and the 32-bit packing's `--dllmap

@@ -8,8 +8,9 @@ Copy GOG's macOS installers (`.pkg`) or the installed `Cuphead.app` (GOG or Stea
 `ports/cuphead/gamedata/` and start Cuphead. The first launch builds the game on the handheld (one
 to a few hours, once; about 10 GB free on the card during the setup, about 2.5 GB afterwards): it
 converts the game's shaders, textures and audio for the handheld and removes the copied game when it
-is done. No Wi-Fi is needed: Unity's Android player comes from the port's donors (`donor/`: small
-games of the port's own, built with Unity). If the setup is interrupted, start Cuphead again: it
+is done. No Wi-Fi and no PortMaster runtime are needed: Unity's Android player comes from the
+port's donors (`donor/`: small games of the port's own, built with Unity), and the setup's tools are
+a small native program (`setup/pmu`). If the setup is interrupted, start Cuphead again: it
 continues where it stopped (log: `ports/cuphead/patchlog.txt`).
 
 The game runs on Unity's own Android player, loaded natively on the handheld's Linux by the port's

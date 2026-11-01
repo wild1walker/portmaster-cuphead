@@ -1,11 +1,11 @@
 # The conversion run again when the kernel kills it (sourced by the setups, after their pm()). On a
 # 1 GB handheld without swap the converter's biggest textures can need more memory than is free
 # beside the firmware, and the kernel kills it (an RG351MP: twice in the textures, each time on a
-# file a new launch then converted at once). Every step of `pmunity convert` journals each file it
+# file a new launch then converted at once). Every step of `pmu convert` journals each file it
 # finishes (<data>/.pmunity.json), so a new process continues after the last one: pm_convert
 # starts one by itself while the killed runs keep finishing files.
 
-pm_convert() {   # pm_convert <data folder> <pmunity convert args>
+pm_convert() {   # pm_convert <data folder> <pmu convert args>
   local j="$1/.pmunity.json" n rc
   while :; do
     n=$(journal_files "$j")
@@ -18,6 +18,5 @@ pm_convert() {   # pm_convert <data folder> <pmunity convert args>
 }
 
 journal_files() {   # journal_files <.pmunity.json>: the files its steps have finished (0 before the first)
-  PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -c \
-    'import json, sys; print(sum(map(len, json.load(open(sys.argv[1]))["done"].values())))' "$1" 2>/dev/null || echo 0
+  pm journal-files "$1" 2>/dev/null || echo 0
 }

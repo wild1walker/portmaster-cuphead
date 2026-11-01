@@ -24,20 +24,22 @@ It builds:
 - portmaster-unity's runtime (`ua_host`, in Docker) if it is not built yet, and its 64-bit build
   for the [64-bit build](technical.md#the-64-bit-build) (`ARCH=arm64 runtime/build.sh`:
   `runtime/host/out/arm64/ua_host`, shipped as `cuphead/ua_host64`);
-- the Python packages the setup adds to PortMaster's `python_3.11` runtime (`pm/build_pylibs.sh`:
-  UnityPy and the image libraries for CPython 3.11, aarch64; it downloads what is not cached in
-  `pm/cache/wheels311/` yet), and Debian 11's OpenSSL 1.1 for the 64-bit setup's downloads;
+- the setup's tools, `pmu` (portmaster-unity's `setup-rs`: a static aarch64 program with the
+  converter's commands the setup runs, so the setup needs no Python), in setup-rs's Rust image
+  (`ua-rust`, `setup-rs/tools/rs.sh`), with UnityPy's class database built in;
 
-and copies the converter (`pmunity`), the 64-bit build's launch part and setup (`launch64.txt`,
+and copies `pmu`, the 64-bit build's launch part and setup (`launch64.txt`,
 `setup64/` with portmaster-unity's `tools/il2cpp/` scripts) and every licence into it
 (`cuphead/licenses/`, one `LICENSE.<component>.txt` each: this project's, portmaster-unity's
 with its THIRD_PARTY.md, libhybris, the video decoders of both runtimes, the .NET runtime,
-Mono.Cecil, OpenSSL and each Python package). Both runtimes are built with `STEAMSTUB=0`
+Mono.Cecil, Unity's Mono for the 64-bit build and what is compiled into `pmu`: astc-encoder, Pillow, texture2ddecoder,
+optimized-routines, lz4, UnityPy, musl and the Rust crates). Both runtimes are built with `STEAMSTUB=0`
 (portmaster-unity's Steamworks stand-ins left out: Cuphead's GOG build has no Steamworks), and
 package.sh rebuilds them that way when they are not. The 32-bit build's files are the same as without the 64-bit
 build; only `Cuphead.sh` (the route choice), `port.json` and the READMEs changed with it.
 
-Needs: Docker, Python 3 with pip, curl, the .NET 8 SDK (`DOTNET=` if `dotnet` is not on the PATH).
+Needs: Docker (with the `ua-rust` image), the .NET 8 SDK (`DOTNET=` if `dotnet` is not on
+the PATH), and portmaster-unity with `setup-rs/` (its branch `rust-setup`).
 
 ## Converting on a computer instead (`build.sh`)
 

@@ -14,8 +14,7 @@ fail() { echo "PATCH_FAIL_MSG:$1"; echo "Patching process failed!"; exit 1; }
 . "$S/cpu.txt"
 step() { echo "== $(date +%H:%M:%S) $*"; cpu_state; }   # (setup/cpu.txt: the CPU at each step)
 mkdir -p "$B" || fail "Cannot write to ports/cuphead/gamedata."
-export PYTHONPATH="$S/pylibs:$S" PYTHONDONTWRITEBYTECODE=1
-pm() { (cd "$S" && PYTHONHOME="$python_dir" LD_LIBRARY_PATH="$python_dir/libs:$LD_LIBRARY_PATH" "$python_dir/bin/python3" -m pmunity "$@"); }
+pm() { "$S/pmu" "$@"; }   # (setup/pmu: the setup's tools, one native program)
 . "$S/resume.txt"   # (pm_convert: the conversion run again when the kernel kills it)
 
 # 1. the DLC's bundles the game does not have yet, and the game's settings file (its Unity version)

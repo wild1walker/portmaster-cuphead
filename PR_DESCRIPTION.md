@@ -23,14 +23,13 @@ tools are deleted afterwards.
   firmwares without 32-bit support (its setup also compiles the game's code with Unity's IL2CPP).
 - `setup/patchscript`, `setup/questions.lua`: the first-launch setup and its one question
   (texture quality).
-- `setup/pmunity/`: the converter (Python; portmaster-unity), run on PortMaster's `python_3.11`
-  runtime; `setup/pylibs/`: the Python packages it needs that the runtime lacks (UnityPy, Pillow,
-  lz4, astc-encoder, ...; aarch64 builds for CPython 3.11).
+- `setup/pmu`: the setup's tools, a small native program (aarch64, static; source:
+  portmaster-unity's `setup-rs`) that unpacks, converts and packs the game. No PortMaster runtime
+  (Python) is needed.
 - `setup/codepatch`: patches the game's `Assembly-CSharp.dll` for the Android player (Mono.Cecil,
   self-contained .NET); `setup/CupheadPort.dll`: the port's helper (frame-rate and memory fixes);
-  `setup/cuphead.json`, `setup/animclips.py`: the converter's settings for Cuphead.
-- `setup64/`: the 64-bit setup, the IL2CPP step's scripts, and `lib/` (Debian 11's OpenSSL 1.1,
-  which the `python_3.11` runtime links for its HTTPS downloads and most firmwares no longer have).
+  `setup/cuphead.json`: the converter's settings for Cuphead.
+- `setup64/`: the 64-bit setup and Unity's Mono for aarch64 (`mono64/`).
 - `cuphead_hotkey.gptk`: gptokeyb for the exit hotkey only (the game reads the pad through SDL).
 - `licenses/`: one `LICENSE.<component>.txt` per bundled component.
 
