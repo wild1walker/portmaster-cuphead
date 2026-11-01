@@ -206,10 +206,13 @@ More options for testing and measuring: [docs/technical.md](docs/technical.md#op
   the current port, so the short pulses stay the default.
 - **The first launch is long** (about 1 to 3 hours, once).
 - **The macOS version only** (GOG's or Steam's). The Windows version does not work.
-- **ROCKNIX on RK3566 handhelds (RG ARC-S, RGB30):** with 2026.10.31 the handheld restarted during
-  the texture conversion. Since 2026.11.01 the setup needs much less memory there (about 330 MB
-  instead of about 510 MB) and continues after a restart; it has not been tried on those handhelds
-  again yet. Please report how it goes.
+- **ROCKNIX on RK3566 handhelds (RG ARC-S, RGB30):** with 2026.11.01 the handheld still restarted
+  during the texture conversion (the RGB30 at 134 of 239 files, its last log line at 87 C), and the
+  setup then continued where it stopped. The chip restarts itself at about 95 C, and ROCKNIX's
+  kernel slows it too little under hours of full load. Since 2026.11.01.2 the setup lowers the CPU's
+  top clock itself from 10 C under the chip's critical temperature (85 C on the RK3566; on an H700
+  that is 105 C, never reached), so a hot handheld's setup runs slower instead of restarting. Each
+  step is in `patchlog.txt`. Not yet retried on those handhelds; please report how it goes.
 - **Firmwares tested by players:** Knulli, muOS, dArkOS, ROCKNIX (libmali and Adreno). Not tried yet:
   AmberELEC, ROCKNIX with Panfrost. If you try another one, please report how it went.
 
