@@ -39,7 +39,7 @@ On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's p
    `unity default resources` are extracted with PortMaster's 7-Zip.
 4. **Conversion:** `pmu convert` with `convert/cuphead.json` and the `animclips` plugin step
    (`convert/animclips.py`, built into pmu):
-   GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, else
+   GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, High or Low, else
    medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
    settings and audio, and the helper's animation table. The shader settings keep the output the
    handheld was tested with: `glcore4x` off, and `compute` off (Cuphead's one compute shader, the

@@ -77,8 +77,8 @@ release's notes: they say whether the new release needs the setup to run again.
 The first time you start Cuphead, PortMaster shows a setup screen with the progress.
 
 1. **It asks for the texture quality** (and, where it matters, the picture shape and resolution).
-   - **Fast (recommended):** the shorter setup.
-   - **Sharper:** textures closer to the original (the difference is hard to see on a small screen);
+   - **Low (recommended):** the shorter setup.
+   - **High:** textures closer to the original (the difference is hard to see on a small screen);
      the setup takes about a fifth longer.
 
    Your first answer is kept, also for the DLC added later.

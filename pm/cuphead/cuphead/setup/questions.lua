@@ -40,10 +40,10 @@ end
 local questions = {
   {
     id = "TEXTURE_QUALITY",
-    question = "Texture quality? Both look the same at normal size. Sharper keeps the textures closer to the original and makes the setup about a fifth longer.",
+    question = "Texture quality? Both look the same at normal size. High keeps the textures closer to the original and makes the setup about a fifth longer.",
     options = {
-      { "fast", "Fast (recommended)" },
-      { "medium", "Sharper" },
+      { "fast", "Low (recommended, shorter setup)" },
+      { "medium", "High (closer to the original)" },
     },
   },
   {

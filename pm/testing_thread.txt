@@ -11,8 +11,8 @@ Instructions:
 Needs your own copy of Cuphead for macOS from GOG (1.3.4, with or without The Delicious Last
 Course). Copy GOG's macOS installers (the .pkg files, game and DLC) or the installed Cuphead.app
 into ports/cuphead/gamedata/, then start Cuphead from Ports.
-The first launch builds the game on the handheld: it asks for the texture quality (Medium is the
-tested one), downloads Unity's Android player from Unity (about 190 MB, needs Wi-Fi), and takes 1 to
+The first launch builds the game on the handheld: it asks for the texture quality (Low, the
+recommended one, makes it shorter), downloads Unity's Android player from Unity (about 190 MB, needs Wi-Fi), and takes 1 to
 3 hours once. About 10 GB free space during the setup. Keep the handheld plugged in; an interrupted
 setup continues on the next launch. The setup log is ports/cuphead/patchlog.txt, the game's
 ports/cuphead/log.txt.

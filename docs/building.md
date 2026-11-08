@@ -66,7 +66,7 @@ Re-running `build.sh` continues where it stopped (the conversion keeps a journal
 
 `SHADER_PRECISION=highp ./build.sh ...` samples textures at full precision, as desktop GPUs do
 ([technical.md](technical.md#options)). `TEXTURE_QUALITY=fast` encodes textures as the setup's
-Fast answer does (default `medium`, what the port is tested with). The folder matches what the
+Low answer does (default `medium`, the High answer). The folder matches what the
 on-device setup leaves in `ports/cuphead/` (same packing options, `port.json`,
 `licenses/`).
 

@@ -74,8 +74,8 @@ body:
     attributes:
       label: Texture quality chosen in the setup
       options:
-        - Medium
-        - Fast
+        - High
+        - Low
         - Not sure
 
   - type: textarea
