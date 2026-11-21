@@ -13,13 +13,17 @@ else
 fi
 
 source $controlfolder/control.txt
+# 1: a release with the 64-bit build only (package.sh AARCH64_ONLY=1 writes it here): no ua_host for
+# armhf, no 32-bit setup or player; the 64-bit ua_host is ua_host, its setup setup/patchscript
+AARCH64_ONLY=0
 # Unity's Android player for Cuphead is 32-bit: a firmware without 32-bit (armhf) libraries gets
 # the 64-bit build (CUPHEAD_ROUTE=64 picks it on one that has them). A build that is set up, or a
 # setup under way, keeps its route (the libraries' check alone flipped between launches on muOS).
 # The 32-bit build tells the firmware's mod file so (PORT_32BIT: muOS then sets up its 32-bit sound)
 G="/$directory/ports/cuphead"
 ARMHF=no; [ -e /lib/ld-linux-armhf.so.3 ] && ARMHF=yes
-if [ "$CUPHEAD_ROUTE" = 64 ]; then ROUTE_WHY="CUPHEAD_ROUTE=64"
+if [ "$AARCH64_ONLY" = 1 ]; then CUPHEAD_ROUTE=64; ROUTE_WHY="a 64-bit only release"
+elif [ "$CUPHEAD_ROUTE" = 64 ]; then ROUTE_WHY="CUPHEAD_ROUTE=64"
 elif [ -f "$G/.cuphead_ready" ] || [ -d "$G/gamedata/.setup" ]; then CUPHEAD_ROUTE=32; ROUTE_WHY="the 32-bit build is there"
 elif [ -f "$G/.cuphead_ready64" ] || [ -d "$G/gamedata/.setup64" ]; then CUPHEAD_ROUTE=64; ROUTE_WHY="the 64-bit build is there"
 elif [ "$ARMHF" = yes ]; then CUPHEAD_ROUTE=32; ROUTE_WHY="32-bit libraries found"
@@ -82,6 +86,14 @@ export UA_PAD_NAME="Xbox Wireless Controller"
 export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
 
 if [ "$CUPHEAD_ROUTE" = 64 ]; then
+  # the 64-bit build's runtime and setup: ua_host64 and setup64/ beside the 32-bit build's, or in a
+  # 64-bit only release ua_host and setup/ (what an earlier release left of its own is removed)
+  if [ "$AARCH64_ONLY" = 1 ]; then
+    HOST64=ua_host; SETUP64="$GAMEDIR/setup/patchscript"
+    rm -rf "$GAMEDIR/ua_host64" "$GAMEDIR/setup64"
+  else
+    HOST64=ua_host64; SETUP64="$GAMEDIR/setup64/patchscript"
+  fi
   source "$GAMEDIR/launch64.txt"
   exit
 fi

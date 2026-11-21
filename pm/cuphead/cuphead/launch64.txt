@@ -1,15 +1,20 @@
-# Cuphead's 64-bit build, sourced by Cuphead.sh on a firmware without 32-bit support. Unity has no
-# 64-bit Android player for Cuphead's Unity version and its 64-bit players are IL2CPP ones: the
-# game's code runs on Unity 2017.4.40f1's 64-bit player through Unity's Mono for aarch64, which the
-# port ships. Its files are its own: setup64/, .cuphead_ready64 and arm64/ (the player, the game,
-# the saves in arm64/data/).
+# Cuphead's 64-bit build, sourced by Cuphead.sh on a firmware without 32-bit support (and always in a
+# 64-bit only release). Unity has no 64-bit Android player for Cuphead's Unity version and its 64-bit
+# players are IL2CPP ones: the game's code runs on Unity 2017.4.40f1's 64-bit player through Unity's
+# Mono for aarch64, which the port ships. Its files are its own: its setup ($SETUP64: setup64/, or
+# setup/ in a 64-bit only release), .cuphead_ready64 and arm64/ (the player, the game, the saves in
+# arm64/data/). HOST64 is its ua_host (ua_host64, or ua_host in a 64-bit only release).
 
-[ -f "$GAMEDIR/.cuphead_ready64" ] || run_setup "$GAMEDIR/setup64/patchscript" "one to a few hours, once"
+[ -f "$GAMEDIR/.cuphead_ready64" ] || run_setup "$SETUP64" "one to a few hours, once"
 if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
   if [ -f "$GAMEDIR/gamedata/.setup64/.step_game" ]; then   # (the game's files are taken in: only the rest is left)
     pm_message "The setup stopped before it finished (log: ports/cuphead/patchlog.txt). Launch Cuphead again: it continues where it stopped."
   else
-    pm_message "Cuphead (64-bit) is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
+    if [ -f "$GAMEDIR/.cuphead_ready" ]; then   # (an earlier release's 32-bit build: this one runs the 64-bit build only)
+      pm_message "This Cuphead release runs the 64-bit build only, which is set up once from your copy of the game: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata again and launch again. Your saves are kept (log: ports/cuphead/patchlog.txt)."
+    else
+      pm_message "Cuphead (64-bit) is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
+    fi
   fi
   sleep 8
   pm_finish
@@ -24,9 +29,18 @@ dlc_waiting "$GAMEDIR/arm64" && export DLC_TARGET="$GAMEDIR/arm64" && run_setup 
 A=$(cat "$GAMEDIR/aspect.txt" 2>/dev/null); case "$A" in crop|[0-9]*:[0-9]*) export CUPHEAD_ASPECT="$A" ;; esac
 R=$(cat "$GAMEDIR/resolution.txt" 2>/dev/null); [ -n "$R" ] && [ "$R" != device ] && export UA_RENDER_SCALE="$R"
 
-$ESUDO chmod +x "$GAMEDIR/ua_host64"
-$GPTOKEYB "ua_host64" -c "$GAMEDIR/cuphead_hotkey.gptk" &
-pm_platform_helper "$GAMEDIR/ua_host64"
-"$GAMEDIR/ua_host64" "$GAMEDIR/arm64"
+# the saves of an earlier release's 32-bit build (data/: files/, shared_prefs/, external/; the same
+# game package, so the same names), once, where the 64-bit build has none yet
+if [ -d "$GAMEDIR/data" ] && [ ! -d "$GAMEDIR/arm64/data" ]; then
+  mkdir -p "$GAMEDIR/arm64/data"
+  for d in files shared_prefs external; do
+    [ -d "$GAMEDIR/data/$d" ] && cp -a "$GAMEDIR/data/$d" "$GAMEDIR/arm64/data/" && echo "the 32-bit build's saves: data/$d copied to arm64/data/"
+  done
+fi
+
+$ESUDO chmod +x "$GAMEDIR/$HOST64"
+$GPTOKEYB "$HOST64" -c "$GAMEDIR/cuphead_hotkey.gptk" &
+pm_platform_helper "$GAMEDIR/$HOST64"
+"$GAMEDIR/$HOST64" "$GAMEDIR/arm64"
 
 pm_finish
