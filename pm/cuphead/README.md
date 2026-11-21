@@ -6,7 +6,7 @@ the macOS version downloads from Steam's console (`steam://open/console`): `down
 
 Copy GOG's macOS installers (`.pkg`) or the installed `Cuphead.app` (GOG or Steam) into
 `ports/cuphead/gamedata/` and start Cuphead. The first launch builds the game on the handheld (one
-to a few hours, once; about 10 GB free on the card during the setup, about 2.5 GB afterwards): it
+to a few hours, once; about 12 GB free on the card during the setup, about 2.5 GB afterwards): it
 converts the game's shaders, textures and audio for the handheld and removes the copied game when it
 is done. No Wi-Fi and no PortMaster runtime are needed: Unity's Android player comes from the
 port's donors (`donor/`: small games of the port's own, built with Unity), and the setup's tools are
@@ -14,9 +14,10 @@ a small native program (`setup/pmu`). If the setup is interrupted (a flat batter
 start Cuphead again: it continues where it stopped (log: `ports/cuphead/patchlog.txt`).
 
 The game runs on Unity's own Android player, loaded natively on the handheld's Linux by the port's
-runtime (no Android, no emulation). On a firmware without 32-bit (armhf) support the setup builds a
-64-bit version instead (about 12 GB free during the setup), which runs the game's code on Unity's
-Mono for 64-bit ARM. Steam's achievements and cloud saves are not available.
+runtime (no Android, no emulation). The port is 64-bit (aarch64) only: the game's code runs on
+Unity's Mono for 64-bit ARM, and no 32-bit (armhf) libraries are needed. Over an earlier release's
+32-bit game: put your copy in `gamedata/` again and start Cuphead; the 64-bit setup runs once and the
+saves are copied over. Steam's achievements and cloud saves are not available.
 
 **The DLC later:** put GOG's DLC installer (`.pkg`), or a `Cuphead.app` with the DLC (Steam: the
 DLC depot's files), into `ports/cuphead/gamedata/` and start Cuphead: it adds the DLC to the built
@@ -31,7 +32,7 @@ cropped a little (default) or keeps the game's 16:9 bars; on 4:3 and square scre
 more of the sides cropped (`crop`; `1:1` on square screens; the menus and HUD always fit);
 `ports/cuphead/aspect.txt` changes it later (`fill`, `16:9`, `crop`, or a shape such as `4:3`).
 
-Saves: `ports/cuphead/data/` (64-bit build: `ports/cuphead/arm64/data/`).
+Saves: `ports/cuphead/arm64/data/`.
 
 Source and build instructions: https://github.com/wild1walker/portmaster-cuphead
 

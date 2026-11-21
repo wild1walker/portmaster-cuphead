@@ -3,9 +3,9 @@
 Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Linux handheld with
 [PortMaster](https://portmaster.games/).
 
-- **For:** players with a handheld that runs PortMaster and has 32-bit ARM libraries (tested on an
-  Anbernic RG34XX-SP with Knulli). Handhelds whose firmware has no 32-bit libraries get a 64-bit
-  build instead, picked by the port itself ([64-bit-only handhelds](#64-bit-only-handhelds)).
+- **For:** players with a handheld that runs PortMaster on a 64-bit ARM (aarch64) system (tested on
+  an Anbernic RG34XX-SP with Knulli and muOS). The port is 64-bit only: it needs no 32-bit ARM
+  libraries ([64-bit only](#64-bit-only), also for a card with an earlier 32-bit install).
 - **You need your own copy of the game.** This port contains **no game files**, and neither do its
   releases. You bring Cuphead for macOS from GOG or Steam; the port turns it into a handheld version
   the first time you start it.
@@ -20,7 +20,7 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 - [What you need](#what-you-need)
 - [Install](#install)
 - [The first launch (setup)](#the-first-launch-setup)
-- [64-bit-only handhelds](#64-bit-only-handhelds)
+- [64-bit only](#64-bit-only)
 - [Controls](#controls)
 - [Performance](#performance)
 - [Options](#options)
@@ -34,13 +34,13 @@ Play **Cuphead** (and **The Delicious Last Course** DLC, if you own it) on a Lin
 
 | | |
 |---|---|
-| **A handheld** | One that runs PortMaster and has a 32-bit (armhf) userland: the 32-bit ARM libraries, with OpenGL ES 3 graphics. Knulli on Allwinner H700 handhelds has them. A 64-bit ARM firmware without them gets the [64-bit build](#64-bit-only-handhelds). |
-| **Tested on** | Players have run it on Knulli (also on a Miyoo Flip), muOS (also on an RG35XX-H), dArkOS and ROCKNIX (libmali and Adreno); developed on an Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480) with Knulli, where the 64-bit build has run too. ROCKNIX on RK3566 handhelds: see [Known issues](#known-issues). |
+| **A handheld** | One that runs PortMaster on a 64-bit ARM (aarch64) system, with OpenGL ES 3 graphics. The port is [64-bit only](#64-bit-only): no 32-bit (armhf) libraries are needed. |
+| **Tested on** | The 64-bit build: set up and played on an Anbernic RG34XX-SP (Allwinner H700, Mali-G31, 1 GB RAM, 720x480) with Knulli, and played there with muOS (2026-11-21). Players ran the earlier releases' 32-bit build on Knulli (also on a Miyoo Flip), muOS (also on an RG35XX-H), dArkOS and ROCKNIX (libmali and Adreno). ROCKNIX on RK3566 handhelds: see [Known issues](#known-issues). |
 | **The game** | Cuphead for **macOS** from **GOG** or **Steam**, version 1.3.4, with or without the DLC. GOG: its macOS installers (`.pkg` files: one for the game, one for the DLC), or the installed `Cuphead.app` copied from a Mac. GOG's current macOS installers have "1.3.9" in their file names; they hold the same game build, and the setup checks it. Steam: `Cuphead.app` copied from a Mac, or, without a Mac, the macOS version downloaded from Steam's console (`steam://open/console`): `download_depot 268910 268912` for the game and `download_depot 268910 1117851` for the DLC (the two downloaded folders, `depot_268912` and `depot_1117851`, as they are). |
 | **Not the Windows version** | The Windows version does not work: its graphics code (shaders) is for Direct3D only. GOG and Steam give you both versions with the game, so download the macOS one. Versions from other stores have not been tried. |
-| **Free space** | About 10 GB free on the card while the setup runs (the 64-bit build: about 12 GB). About 2.5 GB stay used afterwards. |
+| **Free space** | About 12 GB free on the card while the setup runs. About 2.5 GB stay used afterwards. |
 | **Wi-Fi** | Not needed: the port carries Unity's Android player (in small games of its own built with Unity) and its own setup tools (`setup/pmu`), so no PortMaster runtime is downloaded either. |
-| **Time** | The first launch takes about 1 to 3 hours, once (the 64-bit build: several hours more). Every launch after that starts the game straight away. |
+| **Time** | The first launch takes about 1 to 3 hours, once (49 minutes with the Low textures on an RG34XX-SP with Knulli). Every launch after that starts the game straight away. |
 
 ## Install
 
@@ -67,10 +67,11 @@ network). On other firmwares use the `ports` folder PortMaster installs its port
    the handheld. The first start runs the setup (next section).
 
 To remove the port, delete `ports/Cuphead.sh` and the `ports/cuphead/` folder. Your saves are in
-`ports/cuphead/data/`: copy that folder somewhere first if you want to keep them.
+`ports/cuphead/arm64/data/`: copy that folder somewhere first if you want to keep them.
 
-**Updating to a newer release:** back up `ports/cuphead/data/` (your saves) first, and read the
-release's notes: they say whether the new release needs the setup to run again.
+**Updating to a newer release:** back up `ports/cuphead/arm64/data/` (your saves; `ports/cuphead/data/`
+on a 32-bit install) first, and read the release's notes: they say whether the new release needs the
+setup to run again. From a 32-bit install it does: [64-bit only](#64-bit-only).
 
 ## The first launch (setup)
 
@@ -117,21 +118,27 @@ Your saves are kept.
 You can also do this conversion on a computer in minutes instead of hours: see
 [docs/building.md](docs/building.md).
 
-## 64-bit-only handhelds
+## 64-bit only
 
-Some firmwares have no 32-bit ARM libraries at all (the port's launcher sees that by itself). Unity
-made a 64-bit Android player only from a later release of Cuphead's Unity line (2017.4.40f1 instead
-of the game's 2017.4.9f1), so on such a handheld the port builds a **64-bit version**: the same game,
-data and patches, run on Unity's 64-bit player with Unity's Mono for 64-bit ARM, which the port
-carries.
+The port is **64-bit (aarch64) only**: its releases carry nothing for 32-bit (armhf) systems, and
+earlier releases' 32-bit build is gone. Unity made a 64-bit Android player only from a later release
+of Cuphead's Unity line (2017.4.40f1 instead of the game's 2017.4.9f1), so the port runs the same
+game, data and patches on that player with Unity's Mono for 64-bit ARM, which the port carries.
+Everything of the game is in `ports/cuphead/arm64/` (saves: `ports/cuphead/arm64/data/`).
 
-- **Install it the same way** (unzip `cuphead.zip`, copy your game into `gamedata/`, start Cuphead).
-  The setup asks the same questions and takes about as long as the 32-bit one. No Wi-Fi needed.
-- **It needs about 12 GB free** on the card during the setup.
-- **Its files are its own,** so a card moved between a 32-bit and a 64-bit-only handheld keeps both
-  builds apart: everything of the 64-bit build is in `ports/cuphead/arm64/` (saves:
-  `ports/cuphead/arm64/data/`). When the card already has the 32-bit build's saves, the 64-bit setup
-  copies them once. A handheld keeps using the build it has set up.
+**Coming from a 32-bit install** (a game that an earlier release set up on a handheld with 32-bit
+libraries):
+
+- **That game no longer starts:** this release has no runtime for it. Unzip the new `cuphead.zip`
+  over `ports`, as you installed the first.
+- **Put your copy of the game in `ports/cuphead/gamedata/` again** (the first setup used it up) and
+  start Cuphead: the 64-bit setup runs once, with the same questions (about 12 GB free). Started
+  without the game there, the launcher says that it needs it.
+- **Your saves are kept:** the launcher copies them once from `ports/cuphead/data/` into
+  `ports/cuphead/arm64/data/`.
+- **The 32-bit build's own files stay on the card;** the launcher does not remove them.
+
+A 64-bit build that an earlier release set up goes on as it is.
 
 ## Controls
 
@@ -163,7 +170,7 @@ Powkiddy and TrimUI handhelds. So the prompts say B for jump and confirm. If you
 Xbox letters (A at the bottom), answer Xbox to the setup's question, or put `xbox` in
 `ports/cuphead/buttons.txt` (or set `CUPHEAD_PROMPTS=xbox`, see [Options](#options)).
 
-Saves and settings are in `ports/cuphead/data/` (the 64-bit build: `ports/cuphead/arm64/data/`).
+Saves and settings are in `ports/cuphead/arm64/data/`.
 
 ## Performance
 
@@ -225,7 +232,8 @@ PortMaster shows the setup's message. The most common ones:
 | "Put Cuphead.app (macOS, from GOG or Steam) or GOG's macOS installers (.pkg) in ports/cuphead/gamedata" | The setup found no game. Check that the files (or Steam's `depot_` folders) are directly in `ports/cuphead/gamedata/`. |
 | "This Cuphead version is not supported" | The setup needs the macOS build of version 1.3.4 (Unity 2017.4.9f1), GOG's or Steam's. The Windows version does not work. |
 | "... is incomplete (a download or copy that stopped early)" | An installer or a game or DLC file is cut short (`patchlog.txt` names it): download or copy it again, then start Cuphead again. |
-| "The setup needs about 10 GB free on the card" (64-bit: "about 12 GB") | Make space on the card, then start Cuphead again. |
+| "The 64-bit setup needs about 12 GB free on the card" | Make space on the card, then start Cuphead again. |
+| "This Cuphead release runs the 64-bit build only" | The card has an earlier release's 32-bit game: put your copy in `ports/cuphead/gamedata/` again and start Cuphead ([64-bit only](#64-bit-only)). |
 | "The card is too full to pack the game" | Free the space `patchlog.txt` names, then start Cuphead again: it continues where it stopped. |
 | "The handheld restarted during the conversion and the setup lost its place" | A setup started with a release before 2026.11.01 was cut off by a restart. Delete `ports/cuphead/gamedata`, copy your Cuphead files into a new `gamedata` folder and start Cuphead again. |
 | Any other message | Start Cuphead again (the setup continues where it stopped). If it stops again, [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |

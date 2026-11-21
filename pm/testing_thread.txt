@@ -12,12 +12,13 @@ Needs your own copy of Cuphead for macOS from GOG (1.3.4, with or without The De
 Course). Copy GOG's macOS installers (the .pkg files, game and DLC) or the installed Cuphead.app
 into ports/cuphead/gamedata/, then start Cuphead from Ports.
 The first launch builds the game on the handheld: it asks for the texture quality (Low, the
-recommended one, makes it shorter), downloads Unity's Android player from Unity (about 190 MB, needs Wi-Fi), and takes 1 to
-3 hours once. About 10 GB free space during the setup. Keep the handheld plugged in; an interrupted
+recommended one, makes it shorter), needs no Wi-Fi (Unity's Android player comes with the port), and takes 1 to
+3 hours once. About 12 GB free space during the setup. Keep the handheld plugged in; an interrupted
 setup continues on the next launch. The setup log is ports/cuphead/patchlog.txt, the game's
 ports/cuphead/log.txt.
-Needs a 32-bit (armhf) userland with OpenGL ES 3; firmwares without 32-bit libraries cannot run it
-yet.
+Needs a 64-bit (aarch64) system with OpenGL ES 3. The port is 64-bit only: no 32-bit libraries
+needed. Over an earlier release's 32-bit game: put the game in gamedata again and launch; the 64-bit
+setup runs once and the saves are copied over.
 
 | Button | Action |
 |--|--|
