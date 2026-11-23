@@ -8,7 +8,13 @@
 # Its folder: setup64/ beside the 32-bit setup, or setup/ in a 64-bit only release (package.sh
 # AARCH64_ONLY=1: there the Mono runtime is setup/mono64/2017.4/, the layout portmaster-unity's
 # mono-arm64 route and `pmu arch-check` use)
-GD="$GAMEDIR/gamedata"; S="$GAMEDIR/setup"; S64=$(dirname "${PATCHER_FILE:-$GAMEDIR/setup64/patchscript}"); W="$GD/.setup64"
+# Paths relative to the port folder (GAMEDIR=.), as portmaster-unity's setup templates: on some kernels (Knulli
+# on Allwinner A133P) a freed page that starts with an absolute path on the card (pipes leave them) can deadlock
+# its FUSE driver. The script runs on by its relative name, under its own process name
+G0=${GAMEDIR:?}; cd "$G0" || { echo "PATCH_FAIL_MSG:Cannot open ports/cuphead."; exit 1; }
+case $G0 in /*) case $0 in "$G0"/*) exec "$BASH" "./${0#"$G0"/}" "$@";; esac;; esac
+{ printf %s "${0##*/}" > /proc/$$/comm; } 2>/dev/null; GAMEDIR=.
+GD="$GAMEDIR/gamedata"; S="$GAMEDIR/setup"; S64="$GAMEDIR/$(basename "$(dirname "${PATCHER_FILE:-setup64/patchscript}")")"; W="$GD/.setup64"
 D="$W/Cuphead_Data"; A="$GAMEDIR/arm64"; P="$W/player"; MP="$W/managed"
 UNITY=2017.4.40f1
 PLAYER_LIBS="$P/Variations/il2cpp/Release/Libs/arm64-v8a"

@@ -90,7 +90,7 @@ if [ "$CUPHEAD_ROUTE" = 64 ]; then
   # 64-bit only release ua_host and setup/ (what an earlier release left of its own is removed)
   if [ "$AARCH64_ONLY" = 1 ]; then
     HOST64=ua_host; SETUP64="$GAMEDIR/setup/patchscript"
-    rm -rf "$GAMEDIR/ua_host64" "$GAMEDIR/setup64"
+    rm -rf "$GAMEDIR/ua_host64" "$GAMEDIR/setup64" "$GAMEDIR/donor/donor-2017.4.9f1-mono-armv7.apk"
   else
     HOST64=ua_host64; SETUP64="$GAMEDIR/setup64/patchscript"
   fi

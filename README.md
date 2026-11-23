@@ -133,10 +133,14 @@ libraries):
   over `ports`, as you installed the first.
 - **Put your copy of the game in `ports/cuphead/gamedata/` again** (the first setup used it up) and
   start Cuphead: the 64-bit setup runs once, with the same questions (about 12 GB free). Started
-  without the game there, the launcher says that it needs it.
+  without the game there, the setup says "Put Cuphead.app ... in ports/cuphead/gamedata" and the
+  launcher then "This release of Cuphead is 64-bit only ... Your saves are kept".
 - **Your saves are kept:** the launcher copies them once from `ports/cuphead/data/` into
   `ports/cuphead/arm64/data/`.
-- **The 32-bit build's own files stay on the card;** the launcher does not remove them.
+- **The 32-bit build's game files are removed** (about 2.4 GB: `Cuphead.apk`, the `.obb`, `lib/`,
+  `assets/`) when the 64-bit setup starts with your copy in `gamedata/`: this release cannot run
+  them, and the setup gets their room. `ports/cuphead/data/`, the 32-bit build's saves, stays where
+  it is.
 
 A 64-bit build that an earlier release set up goes on as it is.
 
@@ -233,7 +237,7 @@ PortMaster shows the setup's message. The most common ones:
 | "This Cuphead version is not supported" | The setup needs the macOS build of version 1.3.4 (Unity 2017.4.9f1), GOG's or Steam's. The Windows version does not work. |
 | "... is incomplete (a download or copy that stopped early)" | An installer or a game or DLC file is cut short (`patchlog.txt` names it): download or copy it again, then start Cuphead again. |
 | "The 64-bit setup needs about 12 GB free on the card" | Make space on the card, then start Cuphead again. |
-| "This Cuphead release runs the 64-bit build only" | The card has an earlier release's 32-bit game: put your copy in `ports/cuphead/gamedata/` again and start Cuphead ([64-bit only](#64-bit-only)). |
+| "This release of Cuphead is 64-bit only" | The card has an earlier release's 32-bit game: put your copy in `ports/cuphead/gamedata/` again and start Cuphead ([64-bit only](#64-bit-only)). |
 | "The card is too full to pack the game" | Free the space `patchlog.txt` names, then start Cuphead again: it continues where it stopped. |
 | "The handheld restarted during the conversion and the setup lost its place" | A setup started with a release before 2026.11.01 was cut off by a restart. Delete `ports/cuphead/gamedata`, copy your Cuphead files into a new `gamedata` folder and start Cuphead again. |
 | Any other message | Start Cuphead again (the setup continues where it stopped). If it stops again, [report it](#getting-help-and-reporting-a-bug) with `patchlog.txt`. |

@@ -5,18 +5,25 @@
 # setup/ in a 64-bit only release), .cuphead_ready64 and arm64/ (the player, the game, the saves in
 # arm64/data/). HOST64 is its ua_host (ua_host64, or ua_host in a 64-bit only release).
 
+# An earlier release's 32-bit build (.cuphead_ready), which a 64-bit only release cannot run: its game files
+# (about 2.4 GB) go when the 64-bit setup has the game's files to start from, so the setup has their room;
+# its saves (data/) stay
+old32() {
+  (cd "$GAMEDIR" && rm -rf Cuphead.apk main.1.com.cupheadport.game.obb lib assets android_package.json animclips.txt plugins.map cuphead_dlc)
+  echo "the 32-bit build's game files removed (its saves stay in data/)"
+}
+if [ "$AARCH64_ONLY" = 1 ] && [ ! -f "$GAMEDIR/.cuphead_ready64" ] && [ -f "$GAMEDIR/.cuphead_ready" ] && [ -f "$GAMEDIR/Cuphead.apk" ] \
+   && [ -n "$(ls -A "$GAMEDIR/gamedata" 2>/dev/null | grep -vx -e PUT_GAME_FILES_HERE.txt -e .setup64)" ]; then old32; fi
 [ -f "$GAMEDIR/.cuphead_ready64" ] || run_setup "$SETUP64" "one to a few hours, once"
 if [ ! -f "$GAMEDIR/.cuphead_ready64" ]; then
+  # (PortMaster's error card stays until it is closed)
   if [ -f "$GAMEDIR/gamedata/.setup64/.step_game" ]; then   # (the game's files are taken in: only the rest is left)
-    pm_message "The setup stopped before it finished (log: ports/cuphead/patchlog.txt). Launch Cuphead again: it continues where it stopped."
+    pm_show_error "The setup stopped before it finished (log: ports/cuphead/patchlog.txt). Launch Cuphead again: it continues where it stopped." --title "Setup not finished"
+  elif [ -f "$GAMEDIR/.cuphead_ready" ]; then   # (an earlier release's 32-bit build: this release cannot run it)
+    pm_show_error "This release of Cuphead is 64-bit only, and the game on this card was set up for the 32-bit build. Put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata again and launch again: the setup runs once more (one to a few hours). Your saves are kept (log: ports/cuphead/patchlog.txt)." --title "Setup needed again"
   else
-    if [ -f "$GAMEDIR/.cuphead_ready" ]; then   # (an earlier release's 32-bit build: this one runs the 64-bit build only)
-      pm_message "This Cuphead release runs the 64-bit build only, which is set up once from your copy of the game: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata again and launch again. Your saves are kept (log: ports/cuphead/patchlog.txt)."
-    else
-      pm_message "Cuphead (64-bit) is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)."
-    fi
+    pm_show_error "Cuphead is not set up yet: put Cuphead.app or GOG's macOS installers in ports/cuphead/gamedata and launch again (log: ports/cuphead/patchlog.txt)." --title "Setup needed"
   fi
-  sleep 8
   pm_finish
   exit 1
 fi
@@ -37,6 +44,8 @@ if [ -d "$GAMEDIR/data" ] && [ ! -d "$GAMEDIR/arm64/data" ]; then
     [ -d "$GAMEDIR/data/$d" ] && cp -a "$GAMEDIR/data/$d" "$GAMEDIR/arm64/data/" && echo "the 32-bit build's saves: data/$d copied to arm64/data/"
   done
 fi
+# (if the setup did not remove that 32-bit build's game files: none of the game's were in gamedata/)
+if [ "$AARCH64_ONLY" = 1 ] && [ -f "$GAMEDIR/.cuphead_ready" ] && [ -d "$GAMEDIR/arm64/data" ]; then old32; rm -f "$GAMEDIR/.cuphead_ready"; fi
 
 $ESUDO chmod +x "$GAMEDIR/$HOST64"
 $GPTOKEYB "$HOST64" -c "$GAMEDIR/cuphead_hotkey.gptk" &
