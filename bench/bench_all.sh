@@ -7,7 +7,7 @@
 # PHASEHOLD=<s>: coverage runs, every boss state held that long (TestHooks CUPHEAD_TEST_PHASEHOLD).
 # More groups: maps (world maps), hubs (shops, Elder Kettle's house, kitchen, chess castle), tutorials,
 # cutscenes, expert (the heaviest fights on Expert), chalice (one of each kind as Ms. Chalice).
-# Summarize on the Mac: host/benchsum.py bench/*.log
+# Summarize on the Mac: bench/benchsum.sh bench/*.log
 cd "$(dirname "$0")" || exit 1
 mkdir -p bench
 MAXSECS=${MAXSECS:-330}
@@ -64,7 +64,7 @@ for g in $groups; do
         ./run.sh "bench/$g${BENCH_TAG:+_$BENCH_TAG}.log" "$secs" & rp=$!
     sleep 4
     pid=$(pidof ua_host)
-    [ -n "$pid" ] && python3 profcpu.py "$pid" 10 8 > "bench/$g${BENCH_TAG:+_$BENCH_TAG}.cpu" 2>/dev/null &
+    [ -n "$pid" ] && ./pmu-dev profcpu "$pid" 10 8 > "bench/$g${BENCH_TAG:+_$BENCH_TAG}.cpu" 2>/dev/null &
     wait $rp
     echo "$(date +%T) group $g done: $(tail -1 "bench/$g${BENCH_TAG:+_$BENCH_TAG}.log")"
 done

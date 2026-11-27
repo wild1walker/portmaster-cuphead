@@ -2,9 +2,10 @@
 
 The port runs Cuphead's code on Unity's 32-bit ARM Android player with Mono, which needs a 32-bit
 userland on the handheld. Unity's 64-bit ARM Android players exist only for IL2CPP, so for
-64-bit-only firmwares the code is compiled ahead of time: [build64.sh](../build64.sh) (a draft, for
-a PC or Mac) does what [build.sh](../build.sh) does, with portmaster-unity's `pmunity il2cpp` between
-the code patches and the packing:
+64-bit-only firmwares the code was compiled ahead of time by a draft, build64.sh (for a PC or Mac,
+retired on 2026-11-27 with portmaster-unity's IL2CPP build in Docker: `git show 6c8f621:build64.sh`),
+which did what [build.sh](../build.sh) does, with that `il2cpp` between the code patches and the
+packing (the release's 64-bit build runs the game's code on Unity's Mono for aarch64 instead):
 
 ```
 codepatch --target=android (Assembly-CSharp)   the same patches as the 32-bit port

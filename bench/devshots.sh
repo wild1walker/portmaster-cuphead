@@ -5,7 +5,7 @@
 # Each variant: CUPHEAD_TEST_DETERMINISTIC (game time 1/60 s per frame, seeded Random, no input in
 # the level) and CUPHEAD_TEST_SHOTS; Unity's program binary cache is bypassed (UA_SHADER_DUMP) so
 # every variant compiles its own shaders. Results: shots/<tag>/<apk>/<Level>-f<frame>.png, the
-# shader sources Unity compiled (glsl/) and the log. Compare on the PC with tools/imgdiff.py.
+# shader sources Unity compiled (glsl/) and the log. Compare on the PC with `pmu-dev imgdiff` (portmaster-unity setup-rs/tools/pmu-dev.sh).
 cd "$(dirname "$0")" || exit 1
 T=$1; L=$2; F=$3; S=$4; shift 4
 for a in "$@"; do

@@ -16,10 +16,11 @@
 #                  donor-2017.4.40f1-mono-armv7.apk: donor/ in portmaster-unity's tools, built by its build.sh)
 #   ASTC_GUIDES    a folder with the ASTC guides for Cuphead's textures, astc_guide_fast.bin and
 #                  astc_guide_medium.bin (each hard texture block's encoder effort for that quality, chosen
-#                  on a PC; no pixels in them), made from the game's data (with the DLC) by
-#                  `python -m pmunity astc-guide <Cuphead.app/Contents/Resources/Data> <file>
-#                  --config convert/cuphead.json --target fast|medium` (portmaster-unity's convert/, guided_astc
-#                  built: convert/native/guided_astc/build.py). Without them the setup searches every hard block
+#                  on a PC; no pixels in them), made from the game's data (with the DLC) by the converter's
+#                  `astc-guide --config convert/cuphead.json --target fast|medium` (portmaster-unity's
+#                  Python converter, retired 2026-11-27: `git -C <portmaster-unity> show
+#                  2147a04:convert/pmunity/astc_guide.py`; the guides made then stay valid for this game).
+#                  Without them the setup searches every hard block
 #   DOTNET         the .NET 8 SDK's dotnet (default: on PATH, else ~/.dotnet/dotnet)
 #   PMUNITY_MONO64_WORK  the work folder of portmaster-unity's tools/mono64 builds (Unity's Mono 2017.4 for
 #                  aarch64 and its 4.x class libraries, for the 64-bit build's Mono route; default
@@ -78,12 +79,12 @@ log "the setup's tools (pmu, Docker)"
 rm -rf "$B/pmu"; mkdir -p "$B/pmu"
 RS_ROOT=${RS_ROOT:-$B} RS_MOUNTS= "$PM/setup-rs/tools/rs.sh" "$PM" bash -c '
   set -euo pipefail
-  export CARGO_TARGET_DIR=/target/portmaster-cuphead PMU_TPK=/opt/pylibs/UnityPy/resources/lzma.tpk
+  export CARGO_TARGET_DIR=/target/portmaster-cuphead PMU_TPK=$(ls /opt/unitypy/lzma.tpk /opt/pylibs/UnityPy/resources/lzma.tpk 2>/dev/null | head -1)
   T=aarch64-unknown-linux-musl; O=/tmp/out; mkdir -p $O /build; cp -a . /build/setup-rs; cd /build/setup-rs
   command -v "${TC_CXX:-none}" >/dev/null || { echo "ua-rust has no GCC 10 (TC_CXX; setup-rs/docker/Dockerfile.gcc10): the ASTC blocks would not all match" >&2; exit 1; }
   cargo build -q --release --target $T -p pmu >&2
   cp $CARGO_TARGET_DIR/$T/release/pmu $O/
-  cat /opt/pylibs/unitypy-*.dist-info/licenses/LICENSE > $O/unitypy.txt
+  cat $(ls /opt/unitypy/LICENSE /opt/pylibs/unitypy-*.dist-info/licenses/LICENSE 2>/dev/null | head -1) > $O/unitypy.txt
   cat /usr/share/doc/musl/copyright > $O/musl.txt
   cat $(ls -d /opt/cargo/registry/src/*/lz4-sys-1.9.4 | head -1)/liblz4/lib/LICENSE > $O/lz4.txt
   MIT=$(sed /\<year\>/d $(rustc --print sysroot)/share/doc/rust/licenses/MIT.txt)
@@ -138,10 +139,10 @@ cp "$MO/libmonobdwgc-2.0.so" "$MO/libMonoPosixHelper.so" "$M/"
 for n in $CLASSLIBS; do cp "$MO/classlibs/$n" "$M/classlibs/"; done
 cp -R "$MO/classlibs/etc" "$M/etc"                         # Mono's Linux config, 4.5 machine.config
 mkdir -p "$P/donor"; for n in $DONOR_APKS; do cp "$DN/$n" "$P/donor/"; done
-if [ "$A64" = 1 ]; then      # the donors without a 32-bit player (portmaster-unity's slim_donor: the same entries but lib/<not arm64-v8a>/)
+if [ "$A64" = 1 ]; then      # the donors without a 32-bit player (`pmu slim-donor`: the same entries but lib/<not arm64-v8a>/)
   for n in $DONOR_APKS; do
-    (cd "$PM/convert" && python3 -I -c 'import sys; sys.path.insert(0, "."); from pmunity.port import slim_donor
-gone = slim_donor(sys.argv[1], sys.argv[1]); print(f"== donor/{sys.argv[2]}: {len(gone)} files of lib/ left out (aarch64 only)")' "$P/donor/$n" "$n")
+    docker run --rm --platform linux/arm64 -v "$B/pmu:/p:ro" -v "$P/donor:/d" ua-build-arm64 /p/pmu slim-donor "/d/$n" \
+      | sed "s#^/d/#== donor/#"
   done
 fi
 find "$Z" -name '*.sh' -exec chmod 644 {} +            # (the launcher sets the exec bits it needs)

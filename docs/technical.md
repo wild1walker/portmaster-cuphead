@@ -38,7 +38,7 @@ On the first launch `Cuphead.sh` runs `setup/patchscript` through PortMaster's p
    the player's Mono release libraries, its Android `Managed` assemblies and its
    `unity default resources` are extracted with PortMaster's 7-Zip.
 4. **Conversion:** `pmu convert` with `convert/cuphead.json` and the `animclips` plugin step
-   (`convert/animclips.py`, built into pmu):
+   (pmu's built-in `animclips` step, `--plugin animclips`):
    GLES 3 shaders, ASTC textures (quality `medium` or `fast`: the patcher's question, High or Low, else
    medium; the first answer is kept in `gamedata/.setup/.texture_quality`),
    settings and audio, and the helper's animation table. The shader settings keep the output the
@@ -78,8 +78,8 @@ portmaster-unity is not public yet). The game's code gets there in one of two wa
   4.x class libraries (the `unityjit` profile) instead of its own 2.0 ones. The runtime, the bridge
   and those class libraries are built from Unity's MIT-licensed Mono sources and ship in the zip
   (`setup64/mono64/`, about 6 MB of the zip, 15 MB unpacked): nothing is compiled on the handheld and
-  nothing is downloaded. (An IL2CPP build, the code compiled ahead of time, is made on a PC only:
-  `build64.sh`.)
+  nothing is downloaded. (An IL2CPP build, the code compiled ahead of time on a PC, was a draft,
+  `build64.sh`, retired on 2026-11-27 with portmaster-unity's IL2CPP build in Docker.)
 
 What differs on Mono, measured in the arm64 rig against the IL2CPP build (which runs the
 game's 2.0 class libraries) and the 32-bit build's logs: title, slot select, bosses, a run-and-gun
@@ -135,9 +135,9 @@ setup:
    `setup64/mono64/`'s `libil2cpp.so` (the bridge), `libmonobdwgc-2.0.so` and
    `libMonoPosixHelper.so`), `.cuphead_ready64`, then the tools and the installers are removed.
 
-`build64.sh` makes the same build on a PC or Mac (IL2CPP in Docker there), for handhelds too weak
-to compile the code ([building.md](building.md)); its folder is what this setup leaves in
-`ports/cuphead/` (`ua_host64`, `launch64.txt`, `arm64/`, `.cuphead_ready64`).
+`build64.sh` (retired on 2026-11-27: `git show 6c8f621:build64.sh`) made the same build on a PC or
+Mac (IL2CPP in Docker there), for handhelds too weak to compile the code; its folder was what this
+setup leaves in `ports/cuphead/` (`ua_host64`, `launch64.txt`, `arm64/`, `.cuphead_ready64`).
 
 Rehearsed in an aarch64 container (a handheld's busybox tools, a trimmed copy of the game): every
 step up to IL2CPP, the stop with its message there, and, with a stand-in for the IL2CPP build, the
@@ -211,7 +211,7 @@ deterministic replays: not visible).
 
 `bench/` runs on the handheld (with the port's test hooks; [bench/README.md](../bench/README.md)):
 `bench_all.sh` plays every level and boss phase unattended (god mode, scripted pad) in groups,
-`benchsum.py` sums up the logs per level and phase, `ab_device.sh` + `absum.py` alternate two
+`benchsum.sh` sums up the logs per level and phase, `ab_device.sh` + `absum.sh` alternate two
 configurations so both see the same thermal state, `devshots.sh` takes deterministic screenshots
 of several builds for pixel comparisons. portmaster-unity's `tools/` has the generic profiling
-(`UA_PROF_EVERY`, `hitchsum.py`, `profcpu.py`).
+(`UA_PROF_EVERY`, `pmu-dev hitchsum`, `pmu-dev profcpu`).
