@@ -16,10 +16,10 @@
 #                  donor-2017.4.40f1-mono-armv7.apk: donor/ in portmaster-unity's tools, built by its build.sh)
 #   ASTC_GUIDES    a folder with the ASTC guides for Cuphead's textures, astc_guide_fast.bin and
 #                  astc_guide_medium.bin (each hard texture block's encoder effort for that quality, chosen
-#                  on a PC; no pixels in them), made from the game's data (with the DLC) by the converter's
-#                  `astc-guide --config convert/cuphead.json --target fast|medium` (portmaster-unity's
-#                  Python converter, retired 2026-11-27: `git -C <portmaster-unity> show
-#                  2147a04:convert/pmunity/astc_guide.py`; the guides made then stay valid for this game).
+#                  on a PC; no pixels in them), made from the game's data (with the DLC) by portmaster-unity's
+#                  `setup-rs/tools/pmu-dev.sh astc-guide <Data> astc_guide_<q>.bin --config convert/cuphead.json
+#                  --target fast|medium` (until 2026-11-27 the Python converter's astc-guide, which made the
+#                  guides in use: they stay valid for this game).
 #                  Without them the setup searches every hard block
 #   DOTNET         the .NET 8 SDK's dotnet (default: on PATH, else ~/.dotnet/dotnet)
 #   PMUNITY_MONO64_WORK  the work folder of portmaster-unity's tools/mono64 builds (Unity's Mono 2017.4 for
