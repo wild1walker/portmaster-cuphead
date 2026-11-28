@@ -18,6 +18,7 @@
 # Result: <out>/device/ (copy it to the handheld as ports/cuphead/, see README.md).
 # Re-running continues where it stopped: the conversion keeps a journal in <out>/Cuphead_Data.
 set -e
+echo "build.sh made the 32-bit (armhf) device folder; armhf is removed (portmaster-unity tag last-armhf, this repository's history). Use package.sh." >&2; exit 1
 APP=${1:?usage: build.sh <Cuphead.app> [out]}
 APP=$(cd "$APP" && pwd)
 HERE=$(cd "$(dirname "$0")" && pwd)

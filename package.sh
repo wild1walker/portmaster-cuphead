@@ -6,7 +6,7 @@
 #
 # Needs:
 #   PMUNITY        a portmaster-unity checkout with setup-rs/ (default ../portmaster-unity), its runtime
-#                  built (32-bit and 64-bit: runtime/host/out/ua_host, runtime/host/out/arm64/ua_host) or Docker
+#                  built (runtime/host/out/arm64/ua_host) or Docker
 #   Docker         with setup-rs's Rust image (ua-rust, setup-rs/tools/rs.sh) and its GCC 10
 #                  (setup-rs/docker/Dockerfile.gcc10): the setup's tools, pmu, are built in it (a static
 #                  aarch64 binary, Unity's class database from UnityPy embedded)
@@ -30,15 +30,15 @@
 #                  donor without its 32-bit player (only its engine assemblies are read); the 64-bit ua_host
 #                  as ua_host, its setup as setup/patchscript with Unity's Mono in setup/mono64/2017.4/ and a
 #                  setup/setup.env naming the route (the layout of portmaster-unity's mono-arm64 route), the
-#                  launcher's AARCH64_ONLY=1. The zip is checked with `pmu arch-check` (Docker). Default 0:
-#                  both builds, the launcher picks
+#                  launcher's AARCH64_ONLY=1. The zip is checked with `pmu arch-check` (Docker). The only
+#                  value since portmaster-unity removed armhf (2026-11-28; tag last-armhf): 0 is refused
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 OUT=${1:-$HERE/out/pm}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 PM=$(cd "${PMUNITY:-$HERE/../portmaster-unity}" && pwd)
 GM=${GAME_MANAGED:?set GAME_MANAGED to Cuphead.app/Contents/Resources/Data/Managed}
 DN=$(cd "${DONORS:?set DONORS to the folder with the donor APKs}" && pwd)
-A64=${AARCH64_ONLY:-0}; case $A64 in 0|1) ;; *) echo "AARCH64_ONLY is 0 or 1" >&2; exit 1 ;; esac
+A64=${AARCH64_ONLY:-1}; [ "$A64" = 1 ] || { echo "AARCH64_ONLY=0 (the 32-bit build) went with portmaster-unity's armhf removal: its last tree is tag last-armhf" >&2; exit 1; }
 DONOR_APKS="donor-2017.4.40f1-il2cpp-arm64.apk donor-2017.4.40f1-mono-armv7.apk"
 [ "$A64" = 1 ] || DONOR_APKS="donor-2017.4.9f1-mono-armv7.apk $DONOR_APKS"
 ARCHES=armhf; [ "$A64" = 1 ] && ARCHES=     # (the runtimes built: armhf for ua_host, arm64 always)
